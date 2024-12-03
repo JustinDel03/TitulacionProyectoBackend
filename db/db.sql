@@ -25,7 +25,7 @@ INSERT INTO roles (
 )
 
 VALUES(
-	'CLIENTE',
+	'USUARIO',
 	'2021-05-22',
 	'2021-05-22'
 );
@@ -34,7 +34,8 @@ VALUES(
 CREATE TABLE usuarios (
     id_usuario SERIAL PRIMARY KEY,
 	id_rol INT NOT NULL,
-    nombre VARCHAR(255) NOT NULL,
+    nombres VARCHAR(255) NOT NULL,
+	apellidos VARCHAR(255) NOT NULL,
     correo VARCHAR(255) UNIQUE NOT NULL,
     telefono VARCHAR(20),
     imagen TEXT,
@@ -44,6 +45,7 @@ CREATE TABLE usuarios (
 	fecha_creado timestamp without time zone,
 	fecha_modificado timestamp without time zone
 );
+
 
 
 CREATE TABLE menus(

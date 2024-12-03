@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -31,21 +8,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.initDbConnections = exports.poolLocalS = void 0;
+exports.closeDbConnections = exports.initDbConnections = exports.dbPool = void 0;
 const pg_1 = require("pg");
-const config = __importStar(require("./config.json"));
+const config_1 = __importDefault(require("./config/config"));
+// Inicializa las conexiones a la base de datos
 function initDbConnections() {
     return __awaiter(this, void 0, void 0, function* () {
-        exports.poolLocalS = new pg_1.Pool(config.conexionLocalS);
+        exports.dbPool = new pg_1.Pool(config_1.default.database);
         try {
-            yield exports.poolLocalS.connect();
-            console.log('Conectado a la base de datos LocalS.');
+            yield exports.dbPool.connect();
+            console.log('Conexión a la base de datos establecida.');
         }
         catch (err) {
-            console.error('Error al conectar a la base de datos LocalS:', err);
-            throw err; // Lanza el error para que pueda ser manejado por quien llama a esta función
+            console.error('Error al conectar a la base de datos:', err);
+            throw err; // Lanza el error para ser manejado por el servidor
         }
     });
 }
 exports.initDbConnections = initDbConnections;
+// Finaliza las conexiones (útil al cerrar la aplicación)
+function closeDbConnections() {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (exports.dbPool) {
+            yield exports.dbPool.end();
+            console.log('Conexiones a la base de datos cerradas.');
+        }
+    });
+}
+exports.closeDbConnections = closeDbConnections;
