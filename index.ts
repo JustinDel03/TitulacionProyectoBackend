@@ -1,15 +1,16 @@
 import express from 'express';
 import cors from 'cors';
+import { initDbConnections, closeDbConnections } from './db';
 import usuarioRoutes from './routes/usuario';
-import { initDbConnections } from './db';
+import config from './config/config';
 
-const maxRetries = 5; // Número máximo de intentos de reconexión
-const retryDelay = 5000; // Tiempo de espera entre intentos en milisegundos (5 segundos)
+const { maxRetries, retryDelay } = config.retryConfig;
 
 async function startServer() {
   let connected = false;
   let attempts = 0;
 
+  // Intentos de reconexión a la base de datos
   while (!connected && attempts < maxRetries) {
     try {
       await initDbConnections();
@@ -17,7 +18,7 @@ async function startServer() {
       console.log('Conexiones a la base de datos inicializadas.');
     } catch (error) {
       attempts++;
-      console.error(`Error al intentar conectar a la base de datos (Intento ${attempts}/${maxRetries}):`, error);
+      console.error(`Error al conectar a la base de datos (Intento ${attempts}/${maxRetries}):`, error);
       if (attempts < maxRetries) {
         console.log(`Reintentando en ${retryDelay / 1000} segundos...`);
         await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -30,16 +31,28 @@ async function startServer() {
 
   const app = express();
 
+  // Middlewares
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cors());
 
+  // Rutas
   app.use('/api/Usuario', usuarioRoutes);
 
-
-  const port = process.env.PORT || 2500;
-  app.listen(port, () => {
+  // Inicio del servidor
+  const port = process.env.PORT || config.server.port;
+  const server = app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
+  });
+
+  // Manejo del cierre de la aplicación
+  process.on('SIGINT', async () => {
+    console.log('Deteniendo servidor...');
+    server.close(async () => {
+      await closeDbConnections();
+      console.log('Servidor detenido correctamente.');
+      process.exit(0);
+    });
   });
 }
 

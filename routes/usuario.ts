@@ -4,7 +4,7 @@ import { ListaUsuario, IniciarSesion, ListaUsuarioMenu, CrearUsuario } from '../
 const router: Router = Router();
 
 //-------------------------------------- GET -------------------------------------//
-router.get('/Lista', ListaUsuario);
+router.get('/ListaUsuarios', ListaUsuario);
 router.get('/ListaUsuarioMenu', ListaUsuarioMenu);
 
 //-------------------------------------- POST -------------------------------------//
