@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { dbPool } from '../db';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 
 export async function ListaUsuario(req: Request, res: Response) {
@@ -36,6 +37,7 @@ export async function ListaUsuario(req: Request, res: Response) {
 
 export async function ListaUsuarioMenu(req: Request, res: Response) {
   const { correo } = req.query;
+  const {tipoSesion } =req.query;
 
   if (!correo) {
     return res.status(400).json({
@@ -45,7 +47,7 @@ export async function ListaUsuarioMenu(req: Request, res: Response) {
   }
 
   try {
-    const result = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1', [correo]);
+    const result = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipoSesion]);
 
     
     const menu = result.rows.map(row => {
@@ -58,8 +60,6 @@ export async function ListaUsuarioMenu(req: Request, res: Response) {
         correo: row.correo
       };
     });
-    console.log(menu);
-
 
     res.status(200).json({
       error: false,
@@ -78,19 +78,17 @@ export async function ListaUsuarioMenu(req: Request, res: Response) {
 export async function IniciarSesion(req: Request, res: Response) {
   const { correo, password } = req.body;
 
-  console.log('correo y clave', correo, password);
-
   if (!correo || !password) {
     return res.status(400).json({
       error: true,
-      message: 'nombreUsuario y clave son requeridos',
+      message: 'Correo y contraseña son requeridos',
     });
   }
 
   try {
     const result = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
 
-    if (result.rows.length === 0) {
+    if (result.rowCount === 0) {
       return res.status(401).json({
         error: true,
         message: 'Credenciales inválidas',
@@ -98,39 +96,46 @@ export async function IniciarSesion(req: Request, res: Response) {
     }
 
     const usuario = result.rows[0];
-
     const isPasswordValid = await bcrypt.compare(password, usuario.password);
 
-    if (isPasswordValid) {
-      res.status(200).json({
-        error: false,
-        message: 'Usuario autenticado exitosamente',
-        data: {
-          idUsuario: usuario.id_usuario,
-          idRol: usuario.id_rol,
-          nombreRol: usuario.nombre_rol,
-          nombres: usuario.nombres,
-          apellidos: usuario.apellidos,
-          correo: usuario.correo,
-          imagen: usuario.imagen,
-          sessionToken: usuario.session_token,
-          refreshToken: usuario.refresh_token
-        }
-      });
-    } else {
-      res.status(401).json({
+    if (!isPasswordValid) {
+      return res.status(401).json({
         error: true,
         message: 'Credenciales inválidas',
       });
     }
-  } catch (err) {
-    console.error('Error:', err);
+
+    // Generar un nuevo token de sesión
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    await dbPool.query(
+      'UPDATE usuarios SET session_token = $1, fecha_token = NOW() WHERE correo = $2',
+      [sessionToken, correo]
+    );
+
+    res.status(200).json({
+      error: false,
+      message: 'Usuario autenticado exitosamente',
+      data: {
+        idUsuario: usuario.id_usuario,
+        idRol: usuario.id_rol,
+        nombreRol: usuario.nombre_rol,
+        nombres: usuario.nombres,
+        apellidos: usuario.apellidos,
+        correo: usuario.correo,
+        imagen: usuario.imagen,
+      },
+      
+    });
+    console.log(usuario);
+  } catch (error) {
+    console.error('Error en el login:', error);
     res.status(500).json({
       error: true,
       message: 'Error interno del servidor',
     });
   }
 }
+
 
 export async function CrearUsuario(req: Request, res: Response) {
   const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
@@ -152,7 +157,7 @@ export async function CrearUsuario(req: Request, res: Response) {
       RETURNING id_usuario;
     `;
 
-    const values = [id_rol, nombres, apellidos, correo, hashedPassword, telefono, imagen];
+    const values = [2, nombres, apellidos, correo, hashedPassword, telefono, imagen];
 
     await dbPool.query(query, values);
 
