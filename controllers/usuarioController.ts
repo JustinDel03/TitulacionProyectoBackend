@@ -2,24 +2,13 @@ import { Request, Response } from 'express';
 import { dbPool } from '../db';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-
+import { bucket } from '../config/firebase';
 
 export async function ListaUsuario(req: Request, res: Response) {
   try {
     const result = await dbPool.query('SELECT * FROM tbv_usuarios');
 
-    const usuarios = result.rows.map(row => {
-      return {
-        idUsuario: row.id_usuario,
-        idRol: row.id_rol,
-        nombreRol: row.nombre_rol,
-        nombres: row.nombres,
-        apellidos: row.apellidos,
-        correo: row.correo,
-        telefono: row.telefono,
-        imagen: row.imagen
-      };
-    });
+    const usuarios = result.rows
 
     res.status(200).json({
       error: false,
@@ -37,29 +26,20 @@ export async function ListaUsuario(req: Request, res: Response) {
 
 export async function ListaUsuarioMenu(req: Request, res: Response) {
   const { correo } = req.query;
-  const {tipoSesion } =req.query;
+  const { tipo_sesion } = req.query;
 
   if (!correo) {
     return res.status(400).json({
       error: true,
-      message: 'idUsuario es requerido'
+      message: 'id_usuario es requerido'
     });
   }
 
   try {
-    const result = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipoSesion]);
+    const result = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
 
-    
-    const menu = result.rows.map(row => {
-      return {
-        menuId: row.id_menu,
-        nombreMenu: row.nombre_menu,
-        nombreRol: row.nombre_rol,
-        icono: row.icono,
-        url: row.url,
-        correo: row.correo
-      };
-    });
+
+    const menu = result.rows;
 
     res.status(200).json({
       error: false,
@@ -96,9 +76,9 @@ export async function IniciarSesion(req: Request, res: Response) {
     }
 
     const usuario = result.rows[0];
-    const isPasswordValid = await bcrypt.compare(password, usuario.password);
+    const isPassword_valid = await bcrypt.compare(password, usuario.password);
 
-    if (!isPasswordValid) {
+    if (!isPassword_valid) {
       return res.status(401).json({
         error: true,
         message: 'Credenciales inválidas',
@@ -106,25 +86,17 @@ export async function IniciarSesion(req: Request, res: Response) {
     }
 
     // Generar un nuevo token de sesión
-    const sessionToken = crypto.randomBytes(32).toString('hex');
+    const session_token = crypto.randomBytes(32).toString('hex');
     await dbPool.query(
       'UPDATE usuarios SET session_token = $1, fecha_token = NOW() WHERE correo = $2',
-      [sessionToken, correo]
+      [session_token, correo]
     );
 
     res.status(200).json({
       error: false,
       message: 'Usuario autenticado exitosamente',
-      data: {
-        idUsuario: usuario.id_usuario,
-        idRol: usuario.id_rol,
-        nombreRol: usuario.nombre_rol,
-        nombres: usuario.nombres,
-        apellidos: usuario.apellidos,
-        correo: usuario.correo,
-        imagen: usuario.imagen,
-      },
-      
+      data: usuario
+
     });
     console.log(usuario);
   } catch (error) {
@@ -164,10 +136,77 @@ export async function CrearUsuario(req: Request, res: Response) {
     res.status(201).json({
       error: false,
       message: 'Usuario creado exitosamente',
-      
+
     });
   } catch (err) {
     console.error('Error al crear usuario:', err);
+    res.status(500).json({
+      error: true,
+      message: 'Error interno del servidor',
+    });
+  }
+}
+
+
+export async function SubirImagenUsuario(req: Request, res: Response) {
+  if (!req.file) {
+    return res.status(400).json({
+      error: true,
+      message: 'No se ha proporcionado ninguna imagen',
+    });
+  }
+
+  const { originalname, buffer } = req.file;
+
+  try {
+    const blob = bucket.file(`usuarios/${Date.now()}-${originalname}`);
+    const blobStream = blob.createWriteStream({
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+    });
+
+    blobStream.on('error', (err) => {
+      console.error('Error al subir la imagen:', err);
+      res.status(500).json({
+        error: true,
+        message: 'Error al subir la imagen',
+      });
+    });
+
+    blobStream.on('finish', async () => {
+      const public_url = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      res.status(200).json({
+        error: false,
+        message: 'Imagen subida exitosamente',
+        image_url: public_url,
+      });
+    });
+
+    blobStream.end(buffer);
+  } catch (err) {
+    console.error('Error interno al subir la imagen:', err);
+    res.status(500).json({
+      error: true,
+      message: 'Error interno al subir la imagen',
+    });
+  }
+}
+
+
+export async function ListaRoles(req: Request, res: Response) {
+  try {
+    const result = await dbPool.query('SELECT * FROM roles');
+
+    const roles = result.rows
+
+    res.status(200).json({
+      error: false,
+      message: 'Roles obtenidos',
+      data: roles
+    });
+  } catch (err) {
+    console.error('Error:', err);
     res.status(500).json({
       error: true,
       message: 'Error interno del servidor',
