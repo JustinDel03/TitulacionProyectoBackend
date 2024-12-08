@@ -17,9 +17,11 @@ const cors_1 = __importDefault(require("cors"));
 const db_1 = require("./db");
 const usuario_1 = __importDefault(require("./routes/usuario"));
 const config_1 = __importDefault(require("./config/config"));
+const dotenv_1 = __importDefault(require("dotenv"));
 const { maxRetries, retryDelay } = config_1.default.retryConfig;
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
+        dotenv_1.default.config();
         let connected = false;
         let attempts = 0;
         // Intentos de reconexión a la base de datos

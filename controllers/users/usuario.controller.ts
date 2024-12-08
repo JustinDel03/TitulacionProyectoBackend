@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { dbPool } from '../db';
+import { dbPool } from '../../db';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import { responseService } from '../../helpers/methods.helpers';
 
 
 export async function ListaUsuario(req: Request, res: Response) {
@@ -79,10 +80,11 @@ export async function IniciarSesion(req: Request, res: Response) {
   const { correo, password } = req.body;
 
   if (!correo || !password) {
-    return res.status(400).json({
-      error: true,
-      message: 'Correo y contraseña son requeridos',
-    });
+    // return res.status(400).json({
+    //   error: true,
+    //   message: 'Correo y contraseña son requeridos',
+    // });
+    return responseService(400, null, "Los campos no pueden estar vacios", true, res );
   }
 
   try {
@@ -138,7 +140,18 @@ export async function IniciarSesion(req: Request, res: Response) {
 
 
 export async function CrearUsuario(req: Request, res: Response) {
-  const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
+  // const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
+
+  const datos = req.body;
+  const id_rol = parseInt(datos.id_rol);
+  const nombres = datos.nombres;
+  const apellidos = datos.apellidos;
+  const correo = datos.correo;
+  const password = datos.password;
+  const telefono = datos.password;
+  const imagen = datos.imagen;
+
+  console.log(datos.nombre)
 
   if (!id_rol || !nombres || !apellidos || !correo || !password) {
     return res.status(400).json({

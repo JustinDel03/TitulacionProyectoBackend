@@ -3,10 +3,13 @@ import cors from 'cors';
 import { initDbConnections, closeDbConnections } from './db';
 import usuarioRoutes from './routes/usuario';
 import config from './config/config';
+import dotenv from "dotenv";
+
 
 const { maxRetries, retryDelay } = config.retryConfig;
-
+ 
 async function startServer() {
+  dotenv.config();
   let connected = false;
   let attempts = 0;
 

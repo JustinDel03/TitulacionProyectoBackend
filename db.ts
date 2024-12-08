@@ -7,6 +7,8 @@ export let dbPool: Pool;
 export async function initDbConnections(): Promise<void> {
   dbPool = new Pool(config.database);
 
+  console.log(config.database);
+
   try {
     await dbPool.connect();
     console.log('Conexión a la base de datos establecida.');

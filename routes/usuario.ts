@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ListaUsuario, IniciarSesion, ListaUsuarioMenu, CrearUsuario } from '../controllers/usuarioController';
+import { ListaUsuario, IniciarSesion, ListaUsuarioMenu, CrearUsuario } from '../controllers/users/usuario.controller';
 import { validarSessionToken } from '../middlewares/sessionMiddleware';
 
 const router: Router = Router();
@@ -10,6 +10,6 @@ router.get('/ListaUsuarioMenu',validarSessionToken, ListaUsuarioMenu);
 
 //-------------------------------------- POST -------------------------------------//
 router.post('/IniciarSesion', IniciarSesion);
-router.post('/crear',validarSessionToken, CrearUsuario);
+router.post('/crear', CrearUsuario);
 
 export default router;
