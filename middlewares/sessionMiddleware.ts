@@ -28,13 +28,11 @@ export const validarSessionToken = async (req: Request, res: Response, next: Nex
       }
   
       const { session_token, fecha_token } = result.rows[0];
-      const expirationTime = 60 * 30 * 1000; // 30 minutos en milisegundos
-  
-     
+      const expiration_time = 60 * 30 * 1000; // 30 minutos en milisegundos
   
       // Verificar si el token ha expirado
-      const tokenAge = Date.now() - new Date(fecha_token).getTime();
-      if (tokenAge > expirationTime) {
+      const token_age = Date.now() - new Date(fecha_token).getTime();
+      if (token_age > expiration_time) {
         // Invalidar el token si ha expirado
         await dbPool.query('UPDATE usuarios SET session_token = NULL, fecha_token = NULL WHERE correo = $1', [correo]);
         return res.status(401).json({

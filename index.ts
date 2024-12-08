@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { initDbConnections, closeDbConnections } from './db';
 import usuarioRoutes from './routes/usuario';
+import alertaRoutes from './routes/alerta'
 import config from './config/config';
 
 const { maxRetries, retryDelay } = config.retryConfig;
@@ -38,6 +39,7 @@ async function startServer() {
 
   // Rutas
   app.use('/api/Usuario', usuarioRoutes);
+  app.use('/api/Alerta', alertaRoutes);
 
   // Inicio del servidor
   const port = process.env.PORT || config.server.port;
