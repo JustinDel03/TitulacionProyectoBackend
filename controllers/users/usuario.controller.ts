@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import { dbPool } from '../../db';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { responseService } from '../../helpers/methods.helpers';
+import { createJwt, responseService } from '../../helpers/methods.helpers';
+import { messageRespone } from '../../helpers/message.helpers';
 
 
 export async function ListaUsuario(req: Request, res: Response) {
@@ -80,10 +81,6 @@ export async function IniciarSesion(req: Request, res: Response) {
   const { correo, password } = req.body;
 
   if (!correo || !password) {
-    // return res.status(400).json({
-    //   error: true,
-    //   message: 'Correo y contraseña son requeridos',
-    // });
     return responseService(400, null, "Los campos no pueden estar vacios", true, res );
   }
 
@@ -91,43 +88,41 @@ export async function IniciarSesion(req: Request, res: Response) {
     const result = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
 
     if (result.rowCount === 0) {
-      return res.status(401).json({
-        error: true,
-        message: 'Credenciales inválidas',
-      });
+      return responseService(400, null, "Usuario no registrado", true, res);
     }
 
     const usuario = result.rows[0];
     const isPasswordValid = await bcrypt.compare(password, usuario.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({
-        error: true,
-        message: 'Credenciales inválidas',
-      });
+      return responseService(400, null, "Correo y/o contraseña no validos", true, res);
     }
 
     // Generar un nuevo token de sesión
-    const sessionToken = crypto.randomBytes(32).toString('hex');
+    const sessionToken = createJwt({
+      id_usuario : usuario.id_usuario,
+      name: usuario.nombres,
+      surname: usuario.apellidos,
+      email: usuario.correo,
+      phone: usuario.phone
+    })
+
+
+
+
+
+    // const sessionToken = crypto.randomBytes(32).toString('hex');
     await dbPool.query(
-      'UPDATE usuarios SET session_token = $1, fecha_token = NOW() WHERE correo = $2',
+      'UPDATE usuarios SET session_token = $1 WHERE correo = $2',
       [sessionToken, correo]
     );
 
-    res.status(200).json({
-      error: false,
-      message: 'Usuario autenticado exitosamente',
-      data: {
-        idUsuario: usuario.id_usuario,
-        idRol: usuario.id_rol,
-        nombreRol: usuario.nombre_rol,
-        nombres: usuario.nombres,
-        apellidos: usuario.apellidos,
-        correo: usuario.correo,
-        imagen: usuario.imagen,
-      },
-      
-    });
+
+    const datos = {
+      usuario,
+      sessionToken
+    }
+    return responseService(200, datos, messageRespone["200"], false, res );
     console.log(usuario);
   } catch (error) {
     console.error('Error en el login:', error);
@@ -153,12 +148,21 @@ export async function CrearUsuario(req: Request, res: Response) {
 
   console.log(datos.nombre)
 
+
+
   if (!id_rol || !nombres || !apellidos || !correo || !password) {
     return res.status(400).json({
       error: true,
       message: 'Faltan datos requeridos',
     });
   }
+
+  const userExist = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
+
+  if(userExist.rowCount !== 0){
+    return responseService(400, null, "El correo ya se encuentra registrado", true, res);
+  }
+
 
   try {
     // Encriptar la contraseña

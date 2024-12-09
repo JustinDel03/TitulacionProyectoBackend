@@ -4,5 +4,4 @@ export interface DatosJwt{
     surname:string,
     email:string,
     phone:number,
-    token:string|number,
 }

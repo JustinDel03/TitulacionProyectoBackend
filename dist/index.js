@@ -12,16 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("./globalconfig");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const db_1 = require("./db");
 const usuario_1 = __importDefault(require("./routes/usuario"));
 const config_1 = __importDefault(require("./config/config"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const { maxRetries, retryDelay } = config_1.default.retryConfig;
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
-        dotenv_1.default.config();
+        // dotenv.config();
         let connected = false;
         let attempts = 0;
         // Intentos de reconexión a la base de datos

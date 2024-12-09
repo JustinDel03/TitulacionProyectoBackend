@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { DatosJwt } from "../models/jwt.interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import '../globalconfig'
 
 
 export const responseService = (codigo: number, datos: any, mensaje: string = "", error: boolean,resp: Response) => {
@@ -13,8 +14,9 @@ export const responseService = (codigo: number, datos: any, mensaje: string = ""
 }
 
 export const createJwt = (datos: DatosJwt) => {
+    console.log(process.env.DURATION)
     return jwt.sign({ ...datos }, process.env.KEY_JWT!, {
-        expiresIn: process.env.HORAS_JWT, // Usa un valor predeterminado si HORAS_JWT no está definido
+        expiresIn: process.env.DURATION, // Usa un valor predeterminado si HORAS_JWT no está definido
     });
 };
 
