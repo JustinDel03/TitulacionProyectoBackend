@@ -38,8 +38,8 @@ export async function ListaUsuario(req: Request, res: Response) {
 }
 
 export async function ListaUsuarioMenu(req: Request, res: Response) {
-  const { correo } = req.query;
-  const {tipoSesion } =req.query;
+  const { correo } = req.body;
+  const {tipoSesion } =req.headers;
 
   if (!correo) {
     return res.status(400).json({
@@ -79,6 +79,7 @@ export async function ListaUsuarioMenu(req: Request, res: Response) {
 
 export async function IniciarSesion(req: Request, res: Response) {
   const { correo, password } = req.body;
+  const {tipo_sesion} = req.headers;
 
   if (!correo || !password) {
     return responseService(400, null, "Los campos no pueden estar vacios", true, res );
@@ -106,8 +107,9 @@ export async function IniciarSesion(req: Request, res: Response) {
       email: usuario.correo,
       phone: usuario.phone
     })
+    const parametres = {
 
-
+    }
 
 
 
@@ -116,12 +118,29 @@ export async function IniciarSesion(req: Request, res: Response) {
       'UPDATE usuarios SET session_token = $1 WHERE correo = $2',
       [sessionToken, correo]
     );
+    const resultMenu = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
 
+    
+    const menu = result.rows.map(row => {
+      return {
+        menuId: row.id_menu,
+        nombreMenu: row.nombre_menu,
+        nombreRol: row.nombre_rol,
+        icono: row.icono,
+        url: row.url,
+        correo: row.correo
+      };
+    });
+
+
+    console.log(menu);
 
     const datos = {
       usuario,
       sessionToken
     }
+
+
     return responseService(200, datos, messageRespone["200"], false, res );
     console.log(usuario);
   } catch (error) {
@@ -136,6 +155,8 @@ export async function IniciarSesion(req: Request, res: Response) {
 
 export async function CrearUsuario(req: Request, res: Response) {
   // const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
+
+
 
   const datos = req.body;
   const id_rol = parseInt(datos.id_rol);
