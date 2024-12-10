@@ -114,23 +114,13 @@ function IniciarSesion(req, res) {
 exports.IniciarSesion = IniciarSesion;
 function CrearUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
-        if (!id_rol || !nombres || !apellidos || !correo || !password) {
-            return res.status(400).json({
-                error: true,
-                message: 'Faltan datos requeridos',
-            });
-        }
         try {
-            // Encriptar la contraseña
-            const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-            const query = `
-      INSERT INTO usuarios (id_rol, nombres, apellidos, correo, password, telefono, imagen, fecha_creado, fecha_modificado)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-      RETURNING id_usuario;
-    `;
-            const values = [2, nombres, apellidos, correo, hashedPassword, telefono, imagen];
+            const usuario = req.body;
+            usuario.password = yield bcrypt_1.default.hash(usuario.password, 10);
+            const query = `CALL sp_crear_usuario($1);`;
+            const values = [JSON.stringify(usuario)];
             yield db_1.dbPool.query(query, values);
+            // Responder al cliente
             res.status(201).json({
                 error: false,
                 message: 'Usuario creado exitosamente',

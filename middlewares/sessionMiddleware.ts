@@ -26,7 +26,7 @@ export const validarSessionToken = async (req: Request, res: Response, next: Nex
           message: 'Usuario no encontrado',
         });
       }
-  
+
       const { session_token, fecha_token } = result.rows[0];
       const expiration_time = 60 * 30 * 1000; // 30 minutos en milisegundos
   
