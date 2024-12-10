@@ -11,16 +11,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrearAlerta = exports.ListaAlertas = void 0;
 const db_1 = require("../db");
-const firebase_1 = require("../config/firebase");
+const firebase_helpers_1 = require("../helpers/firebase.helpers");
 function ListaAlertas(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            // Consulta las alertas desde la base de datos
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_alertas');
-            const usuarios = result.rows[0];
+            const alertas = result.rows;
             res.status(200).json({
                 error: false,
                 message: 'Usuarios obtenidos',
-                data: usuarios
+                data: alertas
             });
         }
         catch (err) {
@@ -37,65 +38,41 @@ function CrearAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('Body recibido:', req.body.alerta);
         const alerta = JSON.parse(req.body.alerta);
+        // Validar que los campos requeridos estén presentes
         if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta || !alerta.descripcion) {
             return res.status(400).json({
                 error: true,
                 message: 'Datos incompletos: id_usuario, id_tipo_alerta y descripcion son requeridos',
             });
         }
+        // Validar que se haya enviado un archivo
         if (!req.file) {
             return res.status(400).json({
                 error: true,
                 message: 'No se ha proporcionado ninguna imagen',
             });
         }
-        const { originalname, buffer } = req.file;
+        const { originalname, buffer, mimetype } = req.file;
         try {
-            // Subir la imagen a Firebase Storage
-            const blob = firebase_1.bucket.file(`alertas/${Date.now()}-${originalname}`);
-            const blobStream = blob.createWriteStream({
-                metadata: {
-                    contentType: req.file.mimetype,
+            // Subir la imagen a Firebase Storage y obtener la URL firmada
+            const signedUrl = yield (0, firebase_helpers_1.subirImagen)('alertas', originalname, buffer, mimetype);
+            // Agregar la URL al objeto alerta
+            alerta.imagen = signedUrl;
+            // Llamar al procedimiento almacenado para guardar la alerta
+            yield db_1.dbPool.query('CALL insertar_alerta($1::JSON)', [alerta]);
+            res.status(200).json({
+                error: false,
+                message: 'Alerta creada exitosamente',
+                data: {
+                    image_url: signedUrl,
                 },
             });
-            blobStream.on('error', (err) => {
-                console.error('Error al subir la imagen:', err);
-                res.status(500).json({
-                    error: true,
-                    message: 'Error al subir la imagen',
-                });
-            });
-            blobStream.on('finish', () => __awaiter(this, void 0, void 0, function* () {
-                const public_url = `https://storage.googleapis.com/${firebase_1.bucket.name}/${blob.name}`;
-                // Agregar la URL al objeto alerta
-                alerta.imagen = public_url;
-                // Llamar al procedimiento almacenado para guardar la alerta
-                try {
-                    // Llamar al procedimiento almacenado
-                    yield db_1.dbPool.query("CALL insertar_alerta($1::JSON)", [alerta]);
-                    res.status(200).json({
-                        error: false,
-                        message: 'Alerta creada exitosamente',
-                        data: {
-                            image_url: public_url,
-                        },
-                    });
-                }
-                catch (dbError) {
-                    console.error('Error al guardar la alerta en la base de datos:', dbError);
-                    res.status(500).json({
-                        error: true,
-                        message: 'Error al guardar la alerta en la base de datos',
-                    });
-                }
-            }));
-            blobStream.end(buffer);
         }
         catch (err) {
-            console.error('Error interno al crear la alerta:', err);
+            console.error('Error al crear la alerta:', err);
             res.status(500).json({
                 error: true,
-                message: 'Error interno al crear la alerta',
+                message: 'Error al subir la imagen o guardar la alerta',
             });
         }
     });

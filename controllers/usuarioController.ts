@@ -110,33 +110,20 @@ export async function IniciarSesion(req: Request, res: Response) {
 
 
 export async function CrearUsuario(req: Request, res: Response) {
-  const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
-
-  if (!id_rol || !nombres || !apellidos || !correo || !password) {
-    return res.status(400).json({
-      error: true,
-      message: 'Faltan datos requeridos',
-    });
-  }
-
   try {
-    // Encriptar la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const usuario = req.body;
 
-    const query = `
-      INSERT INTO usuarios (id_rol, nombres, apellidos, correo, password, telefono, imagen, fecha_creado, fecha_modificado)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-      RETURNING id_usuario;
-    `;
+    usuario.password = await bcrypt.hash(usuario.password, 10);
 
-    const values = [2, nombres, apellidos, correo, hashedPassword, telefono, imagen];
+    const query = `CALL sp_crear_usuario($1);`;
+    const values = [JSON.stringify(usuario)];
 
     await dbPool.query(query, values);
 
+    // Responder al cliente
     res.status(201).json({
       error: false,
       message: 'Usuario creado exitosamente',
-
     });
   } catch (err) {
     console.error('Error al crear usuario:', err);
@@ -146,6 +133,9 @@ export async function CrearUsuario(req: Request, res: Response) {
     });
   }
 }
+
+
+
 
 
 export async function SubirImagenUsuario(req: Request, res: Response) {

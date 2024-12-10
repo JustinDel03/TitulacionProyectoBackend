@@ -11,6 +11,6 @@ router.get('/ListaUsuarioMenu', sessionMiddleware_1.validarSessionToken, usuario
 router.get('/ListaRoles', sessionMiddleware_1.validarSessionToken, usuarioController_1.ListaRoles);
 //-------------------------------------- POST -------------------------------------//
 router.post('/IniciarSesion', usuarioController_1.IniciarSesion);
-router.post('/crear', sessionMiddleware_1.validarSessionToken, usuarioController_1.CrearUsuario);
+router.post('/crear', usuarioController_1.CrearUsuario);
 router.post('/subirImagen', uploadMiddleware_1.upload.single('imagen'), usuarioController_1.SubirImagenUsuario);
 exports.default = router;

@@ -6,7 +6,7 @@ import { upload } from '../middlewares/uploadMiddleware';
 const router: Router = Router();
 
 //-------------------------------------- GET -------------------------------------//
-router.get('/ListaAlertas', validarSessionToken, ListaAlertas);
+router.get('/ListaAlertas', ListaAlertas);
 
 //-------------------------------------- POST -------------------------------------//
 router.post('/CrearAlerta', upload.single('imagen'), CrearAlerta);

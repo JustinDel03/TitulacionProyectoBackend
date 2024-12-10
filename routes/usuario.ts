@@ -12,7 +12,7 @@ router.get('/ListaRoles',validarSessionToken, ListaRoles);
 
 //-------------------------------------- POST -------------------------------------//
 router.post('/IniciarSesion', IniciarSesion);
-router.post('/crear',validarSessionToken, CrearUsuario);
+router.post('/crear', CrearUsuario);
 router.post('/subirImagen', upload.single('imagen'), SubirImagenUsuario);
 
 

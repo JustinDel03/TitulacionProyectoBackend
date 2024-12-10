@@ -24,3 +24,36 @@ BEGIN
     );
 END;
 $$;
+
+
+CREATE OR REPLACE PROCEDURE sp_crear_usuario(
+    p_datos JSONB
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    INSERT INTO usuarios (
+        id_rol,
+        nombres,
+        apellidos,
+        correo,
+        password,
+        telefono,
+        imagen,
+		bloqueado,
+        fecha_creado,
+        fecha_modificado
+    )
+    VALUES (
+        (p_datos->>'id_rol')::INTEGER,
+        p_datos->>'nombres',
+        p_datos->>'apellidos',
+        p_datos->>'correo',
+        p_datos->>'password',
+        NULLIF(p_datos->>'telefono', ''),
+        NULLIF(p_datos->>'imagen', ''),
+		(p_datos->>'bloqueado')::BOOLEAN,
+        NOW(),
+        NOW()
+    );
+END;
+$$;
