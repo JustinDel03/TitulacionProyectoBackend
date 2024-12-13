@@ -12,29 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ListaUsuario = ListaUsuario;
+exports.ListaRoles = exports.SubirImagenUsuario = exports.ListaUsuario = ListaUsuario;
 exports.ListaUsuarioMenu = ListaUsuarioMenu;
 exports.IniciarSesion = IniciarSesion;
 exports.CrearUsuario = CrearUsuario;
 const db_1 = require("../db");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto_1 = __importDefault(require("crypto"));
+const firebase_1 = require("../config/firebase");
 function ListaUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios');
-            const usuarios = result.rows.map(row => {
-                return {
-                    idUsuario: row.id_usuario,
-                    idRol: row.id_rol,
-                    nombreRol: row.nombre_rol,
-                    nombres: row.nombres,
-                    apellidos: row.apellidos,
-                    correo: row.correo,
-                    telefono: row.telefono,
-                    imagen: row.imagen
-                };
-            });
+            const usuarios = result.rows;
             res.status(200).json({
                 error: false,
                 message: 'Usuarios obtenidos',
@@ -53,25 +43,16 @@ function ListaUsuario(req, res) {
 function ListaUsuarioMenu(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { correo } = req.query;
-        const { tipoSesion } = req.query;
+        const { tipo_sesion } = req.query;
         if (!correo) {
             return res.status(400).json({
                 error: true,
-                message: 'idUsuario es requerido'
+                message: 'id_usuario es requerido'
             });
         }
         try {
-            const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipoSesion]);
-            const menu = result.rows.map(row => {
-                return {
-                    menuId: row.id_menu,
-                    nombreMenu: row.nombre_menu,
-                    nombreRol: row.nombre_rol,
-                    icono: row.icono,
-                    url: row.url,
-                    correo: row.correo
-                };
-            });
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
+            const menu = result.rows;
             res.status(200).json({
                 error: false,
                 message: 'Lista de Menús obtenida',
@@ -105,28 +86,20 @@ function IniciarSesion(req, res) {
                 });
             }
             const usuario = result.rows[0];
-            const isPasswordValid = yield bcrypt_1.default.compare(password, usuario.password);
-            if (!isPasswordValid) {
+            const isPassword_valid = yield bcrypt_1.default.compare(password, usuario.password);
+            if (!isPassword_valid) {
                 return res.status(401).json({
                     error: true,
                     message: 'Credenciales inválidas',
                 });
             }
             // Generar un nuevo token de sesión
-            const sessionToken = crypto_1.default.randomBytes(32).toString('hex');
-            yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1, fecha_token = NOW() WHERE correo = $2', [sessionToken, correo]);
+            const session_token = crypto_1.default.randomBytes(32).toString('hex');
+            yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1, fecha_token = NOW() WHERE correo = $2', [session_token, correo]);
             res.status(200).json({
                 error: false,
                 message: 'Usuario autenticado exitosamente',
-                data: {
-                    idUsuario: usuario.id_usuario,
-                    idRol: usuario.id_rol,
-                    nombreRol: usuario.nombre_rol,
-                    nombres: usuario.nombres,
-                    apellidos: usuario.apellidos,
-                    correo: usuario.correo,
-                    imagen: usuario.imagen,
-                },
+                data: usuario
             });
             console.log(usuario);
         }
@@ -141,23 +114,13 @@ function IniciarSesion(req, res) {
 }
 function CrearUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
-        if (!id_rol || !nombres || !apellidos || !correo || !password) {
-            return res.status(400).json({
-                error: true,
-                message: 'Faltan datos requeridos',
-            });
-        }
         try {
-            // Encriptar la contraseña
-            const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-            const query = `
-      INSERT INTO usuarios (id_rol, nombres, apellidos, correo, password, telefono, imagen, fecha_creado, fecha_modificado)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-      RETURNING id_usuario;
-    `;
-            const values = [2, nombres, apellidos, correo, hashedPassword, telefono, imagen];
+            const usuario = req.body;
+            usuario.password = yield bcrypt_1.default.hash(usuario.password, 10);
+            const query = `CALL sp_crear_usuario($1);`;
+            const values = [JSON.stringify(usuario)];
             yield db_1.dbPool.query(query, values);
+            // Responder al cliente
             res.status(201).json({
                 error: false,
                 message: 'Usuario creado exitosamente',
@@ -172,3 +135,67 @@ function CrearUsuario(req, res) {
         }
     });
 }
+function SubirImagenUsuario(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!req.file) {
+            return res.status(400).json({
+                error: true,
+                message: 'No se ha proporcionado ninguna imagen',
+            });
+        }
+        const { originalname, buffer } = req.file;
+        try {
+            const blob = firebase_1.bucket.file(`usuarios/${Date.now()}-${originalname}`);
+            const blobStream = blob.createWriteStream({
+                metadata: {
+                    contentType: req.file.mimetype,
+                },
+            });
+            blobStream.on('error', (err) => {
+                console.error('Error al subir la imagen:', err);
+                res.status(500).json({
+                    error: true,
+                    message: 'Error al subir la imagen',
+                });
+            });
+            blobStream.on('finish', () => __awaiter(this, void 0, void 0, function* () {
+                const public_url = `https://storage.googleapis.com/${firebase_1.bucket.name}/${blob.name}`;
+                res.status(200).json({
+                    error: false,
+                    message: 'Imagen subida exitosamente',
+                    image_url: public_url,
+                });
+            }));
+            blobStream.end(buffer);
+        }
+        catch (err) {
+            console.error('Error interno al subir la imagen:', err);
+            res.status(500).json({
+                error: true,
+                message: 'Error interno al subir la imagen',
+            });
+        }
+    });
+}
+exports.SubirImagenUsuario = SubirImagenUsuario;
+function ListaRoles(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const result = yield db_1.dbPool.query('SELECT * FROM roles');
+            const roles = result.rows;
+            res.status(200).json({
+                error: false,
+                message: 'Roles obtenidos',
+                data: roles
+            });
+        }
+        catch (err) {
+            console.error('Error:', err);
+            res.status(500).json({
+                error: true,
+                message: 'Error interno del servidor',
+            });
+        }
+    });
+}
+exports.ListaRoles = ListaRoles;

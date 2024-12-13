@@ -30,3 +30,28 @@ CREATE VIEW tbv_usuarios AS
         r.nombre AS nombre_rol
     FROM usuarios u
         JOIN roles r ON u.id_rol = r.id_rol;
+
+
+
+
+CREATE VIEW tbv_alertas AS
+SELECT
+	a.id_alerta,
+	b.tipo_alerta,
+	b.nivel_prioridad,
+	b.icono_alerta,
+	(c.nombres ||' '|| c. apellidos) AS usuario,
+	d.nombre_organizacion,
+	e.nombre_estado,
+	a.coordenada_longitud,
+	a.coordenada_latitud,
+	a.imagen,
+	a.descripcion,
+	a.fecha_creado
+
+FROM
+	alertas a
+JOIN tipos_alerta b ON a.id_tipo_alerta = b.id_tipo_alerta
+JOIN usuarios c ON a.id_usuario = c.id_usuario
+JOIN organizaciones d ON a.id_organizacion = d.id_organizacion
+JOIN estados_alerta e ON a.id_estado = e.id_estado_alerta;

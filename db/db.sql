@@ -73,7 +73,9 @@ CREATE TABLE usuarios (
     telefono VARCHAR(10),
     imagen TEXT,
     password TEXT,
+    bloqueado BOOLEAN,
     session_token TEXT,
+    fecha_token TIMESTAMP,
     fecha_creado TIMESTAMP DEFAULT NOW(),
     fecha_modificado TIMESTAMP
 );

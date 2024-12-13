@@ -3,7 +3,8 @@
   import cors from 'cors';
   import { initDbConnections, closeDbConnections } from './db';
   import usuarioRoutes from './routes/usuario';
-  import config from './config/config';
+  import alertaRoutes from './routes/alerta'
+import config from './config/config';
 
   
   const { maxRetries, retryDelay } = config.retryConfig;
@@ -39,8 +40,9 @@
     app.use(express.urlencoded({ extended: true }));
     app.use(cors());
 
-    // Rutas
-    app.use('/api/Usuario', usuarioRoutes);
+  // Rutas
+  app.use('/api/Usuario', usuarioRoutes);
+  app.use('/api/Alerta', alertaRoutes);
 
     // Inicio del servidor
     const port = process.env.PORT || config.server.port;

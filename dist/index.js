@@ -17,6 +17,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const db_1 = require("./db");
 const usuario_1 = __importDefault(require("./routes/usuario"));
+const alerta_1 = __importDefault(require("./routes/alerta"));
 const config_1 = __importDefault(require("./config/config"));
 const { maxRetries, retryDelay } = config_1.default.retryConfig;
 function startServer() {
@@ -51,6 +52,7 @@ function startServer() {
         app.use((0, cors_1.default)());
         // Rutas
         app.use('/api/Usuario', usuario_1.default);
+        app.use('/api/Alerta', alerta_1.default);
         // Inicio del servidor
         const port = process.env.PORT || config_1.default.server.port;
         const server = app.listen(port, () => {
