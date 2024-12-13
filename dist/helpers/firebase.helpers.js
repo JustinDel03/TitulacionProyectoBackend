@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.subirImagen = void 0;
+exports.subirImagen = subirImagen;
 const firebase_1 = require("../config/firebase");
 /**
  * Subir una imagen y generar una URL firmada.
@@ -42,4 +42,3 @@ function subirImagen(folder, fileName, fileBuffer, mimeType) {
         return signedUrl;
     });
 }
-exports.subirImagen = subirImagen;

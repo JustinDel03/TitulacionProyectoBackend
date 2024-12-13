@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const usuario_controller_1 = require("../controllers/users/usuario.controller");
+const usuarioController_1 = require("../controllers/usuarioController");
 const sessionMiddleware_1 = require("../middlewares/sessionMiddleware");
 const uploadMiddleware_1 = require("../middlewares/uploadMiddleware");
 const router = (0, express_1.Router)();
@@ -10,7 +10,7 @@ router.get('/ListaUsuarios', sessionMiddleware_1.validarSessionToken, usuarioCon
 router.get('/ListaUsuarioMenu', sessionMiddleware_1.validarSessionToken, usuarioController_1.ListaUsuarioMenu);
 router.get('/ListaRoles', sessionMiddleware_1.validarSessionToken, usuarioController_1.ListaRoles);
 //-------------------------------------- POST -------------------------------------//
-router.post('/IniciarSesion', usuario_controller_1.IniciarSesion);
-router.post('/crear', usuario_controller_1.CrearUsuario);
+router.post('/IniciarSesion', usuarioController_1.IniciarSesion);
+router.post('/crear', usuarioController_1.CrearUsuario);
 router.post('/subirImagen', uploadMiddleware_1.upload.single('imagen'), usuarioController_1.SubirImagenUsuario);
 exports.default = router;
