@@ -88,9 +88,7 @@ export async function IniciarSesion(req: Request, res: Response) {
       email: usuario.correo,
       phone: usuario.phone
     })
-    const parametres = {
-
-    }
+    
 
 
 
@@ -151,10 +149,7 @@ export async function CrearUsuario(req: Request, res: Response) {
 
 
   if (!id_rol || !nombres || !apellidos || !correo || !password) {
-    return res.status(400).json({
-      error: true,
-      message: 'Faltan datos requeridos',
-    });
+   return responseService(400, null, 'Campos imcompletos', true, res);
   }
 
   const userExist = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
@@ -174,16 +169,18 @@ export async function CrearUsuario(req: Request, res: Response) {
     await dbPool.query(query, values);
 
     // Responder al cliente
-    res.status(201).json({
-      error: false,
-      message: 'Usuario creado exitosamente',
-    });
+    // res.status(201).json({
+    //   error: false,
+    //   message: 'Usuario creado exitosamente',
+    // });
+    return responseService(200, null, 'Cuenta creada exitosamente', false, res);
   } catch (err) {
     console.error('Error al crear usuario:', err);
-    res.status(500).json({
-      error: true,
-      message: 'Error interno del servidor',
-    });
+    // res.status(500).json({
+    //   error: true,
+    //   message: 'Error interno del servidor',
+    // });
+    return responseService(500, null, 'Ocurrio un error en el servidor', true, res);
   }
 }
 

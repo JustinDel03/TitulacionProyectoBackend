@@ -1,14 +1,15 @@
 import { Router } from 'express';
-import { ListaAlertas, CrearAlerta  } from '../controllers/alertaController';
-import { validarSessionToken } from '../middlewares/sessionMiddleware';
+
 import { upload } from '../middlewares/uploadMiddleware';
+import { CrearAlerta, ListaAlertas } from '../controllers/alert/alerts.controller';
+import { validaTokenJwt } from '../middlewares/jwt';
 
 const router: Router = Router();
 
 //-------------------------------------- GET -------------------------------------//
-router.get('/ListaAlertas', ListaAlertas);
+router.get('/ListaAlertas', validaTokenJwt,ListaAlertas);
 
 //-------------------------------------- POST -------------------------------------//
-router.post('/CrearAlerta', upload.single('imagen'), CrearAlerta);
+router.post('/CrearAlerta', validaTokenJwt,upload.single('imagen'), CrearAlerta);
 
 export default router;

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { dbPool } from '../db';
-import { subirImagen  } from '../helpers/firebase.helpers';
+import { dbPool } from '../../db';
+import { subirImagen } from '../../helpers/firebase.helpers';
 
 
 export async function ListaAlertas(req: Request, res: Response) {
