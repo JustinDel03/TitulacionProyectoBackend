@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ListaUsuario, IniciarSesion, ListaUsuarioMenu, CrearUsuario, SubirImagenUsuario, ListaRoles  } from '../controllers/usuarioController';
+import { ListaUsuario, IniciarSesion, ListaUsuarioMenu, CrearUsuario, SubirImagenUsuario, ListaRoles  } from '../controllers/users/usuario.controller';
 import { validarSessionToken } from '../middlewares/sessionMiddleware';
 import { upload } from '../middlewares/uploadMiddleware';
 

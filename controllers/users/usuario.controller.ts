@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import { dbPool } from '../../db';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { bucket } from '../config/firebase';import { createJwt, responseService } from '../../helpers/methods.helpers';
+import { bucket } from '../../config/firebase'
+;import { createJwt, responseService } from '../../helpers/methods.helpers';
 import { messageRespone } from '../../helpers/message.helpers';
 
 
@@ -75,7 +76,7 @@ export async function IniciarSesion(req: Request, res: Response) {
     const usuario = result.rows[0];
     const isPassword_valid = await bcrypt.compare(password, usuario.password);
 
-    if (!isPasswordValid) {
+    if (!isPassword_valid) {
       return responseService(400, null, "Correo y/o contraseña no validos", true, res);
     }
 
@@ -138,16 +139,14 @@ export async function CrearUsuario(req: Request, res: Response) {
 
 
 
-  const datos = req.body;
-  const id_rol = parseInt(datos.id_rol);
-  const nombres = datos.nombres;
-  const apellidos = datos.apellidos;
-  const correo = datos.correo;
-  const password = datos.password;
-  const telefono = datos.password;
-  const imagen = datos.imagen;
-
-  console.log(datos.nombre)
+  const usuario = req.body;
+  const id_rol = parseInt(usuario.id_rol);
+  const nombres = usuario.nombres;
+  const apellidos = usuario.apellidos;
+  const correo = usuario.correo;
+  const password = usuario.password;
+  
+  console.log(usuario.nombre)
 
 
 
@@ -167,7 +166,7 @@ export async function CrearUsuario(req: Request, res: Response) {
 
   try {
     // Encriptar la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    usuario.password = await bcrypt.hash(password, 10);
 
     const query = `CALL sp_crear_usuario($1);`;
     const values = [JSON.stringify(usuario)];
