@@ -27,7 +27,7 @@ function ListaUsuario(req, res) {
         }
         catch (err) {
             console.error('Error:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["200"], false, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
         }
     });
 }
@@ -92,17 +92,15 @@ function IniciarSesion(req, res) {
             yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1 WHERE correo = $2', [sessionToken, correo]);
             const resultMenu = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
             const menu = resultMenu.rows;
-            console.log(menu);
             const data = {
                 menu,
                 sessionToken
             };
-            console.log('Datos a enviar al frontend: ', data);
             return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageRespone["200"], false, res);
         }
         catch (error) {
             console.error('Error en el login:', error);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["200"], false, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
         }
     });
 }

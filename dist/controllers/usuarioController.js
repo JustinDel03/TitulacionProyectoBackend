@@ -12,7 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ListaRoles = exports.SubirImagenUsuario = exports.CrearUsuario = exports.IniciarSesion = exports.ListaUsuarioMenu = exports.ListaUsuario = void 0;
+exports.ListaRoles = exports.SubirImagenUsuario = exports.ListaUsuario = ListaUsuario;
+exports.ListaUsuarioMenu = ListaUsuarioMenu;
+exports.IniciarSesion = IniciarSesion;
+exports.CrearUsuario = CrearUsuario;
 const db_1 = require("../db");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -37,7 +40,6 @@ function ListaUsuario(req, res) {
         }
     });
 }
-exports.ListaUsuario = ListaUsuario;
 function ListaUsuarioMenu(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { correo } = req.query;
@@ -66,7 +68,6 @@ function ListaUsuarioMenu(req, res) {
         }
     });
 }
-exports.ListaUsuarioMenu = ListaUsuarioMenu;
 function IniciarSesion(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { correo, password } = req.body;
@@ -111,7 +112,6 @@ function IniciarSesion(req, res) {
         }
     });
 }
-exports.IniciarSesion = IniciarSesion;
 function CrearUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -135,7 +135,6 @@ function CrearUsuario(req, res) {
         }
     });
 }
-exports.CrearUsuario = CrearUsuario;
 function SubirImagenUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!req.file) {
