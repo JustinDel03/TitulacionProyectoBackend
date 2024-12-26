@@ -1,16 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const usuarioController_1 = require("../controllers/usuarioController");
-const sessionMiddleware_1 = require("../middlewares/sessionMiddleware");
+const usuario_controller_1 = require("../controllers/users/usuario.controller");
 const uploadMiddleware_1 = require("../middlewares/uploadMiddleware");
+const jwt_1 = require("../middlewares/jwt");
 const router = (0, express_1.Router)();
 //-------------------------------------- GET -------------------------------------//
-router.get('/ListaUsuarios', sessionMiddleware_1.validarSessionToken, usuarioController_1.ListaUsuario);
-router.get('/ListaUsuarioMenu', sessionMiddleware_1.validarSessionToken, usuarioController_1.ListaUsuarioMenu);
-router.get('/ListaRoles', sessionMiddleware_1.validarSessionToken, usuarioController_1.ListaRoles);
+router.get('/ListaUsuarios', jwt_1.validaTokenJwt, usuario_controller_1.ListaUsuario);
+router.get('/ListaRoles', jwt_1.validaTokenJwt, usuario_controller_1.ListaRoles);
 //-------------------------------------- POST -------------------------------------//
-router.post('/IniciarSesion', usuarioController_1.IniciarSesion);
-router.post('/crear', usuarioController_1.CrearUsuario);
-router.post('/subirImagen', uploadMiddleware_1.upload.single('imagen'), usuarioController_1.SubirImagenUsuario);
+router.post('/IniciarSesion', usuario_controller_1.IniciarSesion);
+router.post('/crear', jwt_1.validaTokenJwt, usuario_controller_1.CrearUsuario);
+router.post('/subirImagen', jwt_1.validaTokenJwt, uploadMiddleware_1.upload.single('imagen'), usuario_controller_1.SubirImagenUsuario);
 exports.default = router;

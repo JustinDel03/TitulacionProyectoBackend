@@ -19,6 +19,7 @@ const config_1 = __importDefault(require("./config/config"));
 function initDbConnections() {
     return __awaiter(this, void 0, void 0, function* () {
         exports.dbPool = new pg_1.Pool(config_1.default.database);
+        console.log(config_1.default.database);
         try {
             yield exports.dbPool.connect();
             console.log('Conexión a la base de datos establecida.');

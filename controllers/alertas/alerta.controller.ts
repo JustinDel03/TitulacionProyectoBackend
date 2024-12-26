@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
-import { dbPool } from '../db';
-import { subirImagen  } from '../helpers/firebase.helpers';
+import { dbPool } from '../../db';
+import { subirImagen  } from '../../helpers/firebase.helpers';
+import { responseService } from '../../helpers/methods.helpers';
+import { messageRespone } from '../../helpers/message.helpers';
+
+
 
 
 export async function ListaAlertas(req: Request, res: Response) {
@@ -9,17 +13,12 @@ export async function ListaAlertas(req: Request, res: Response) {
     const result = await dbPool.query('SELECT * FROM tbv_alertas');
     const alertas = result.rows;
 
-    res.status(200).json({
-      error: false,
-      message: 'Usuarios obtenidos',
-      data: alertas
-    });
+    return responseService(200, alertas, messageRespone["200"], false, res );
+
   } catch (err) {
     console.error('Error:', err);
-    res.status(500).json({
-      error: true,
-      message: 'Error interno del servidor',
-    });
+    responseService(500,null, messageRespone["500"], false, res)
+
   }
 }
 

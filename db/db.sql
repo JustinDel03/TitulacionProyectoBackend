@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS tipos_alerta;
 CREATE TABLE tipos_alerta (
     id_tipo_alerta BIGSERIAL PRIMARY KEY,
     tipo_alerta VARCHAR(255) NOT NULL,
@@ -7,6 +8,7 @@ CREATE TABLE tipos_alerta (
     fecha_modificado TIMESTAMP
 );
 
+DROP TABLE IF EXISTS estados_alerta; 
 CREATE TABLE estados_alerta (
     id_estado_alerta BIGSERIAL PRIMARY KEY,
     nombre_estado VARCHAR(255) NOT NULL,
@@ -14,6 +16,8 @@ CREATE TABLE estados_alerta (
     fecha_modificado TIMESTAMP
 );
 
+
+DROP TABLE IF EXISTS organizaciones;
 CREATE TABLE organizaciones (
     id_organizacion BIGSERIAL PRIMARY KEY,
     nombre_organizacion VARCHAR(255) NOT NULL,
@@ -26,6 +30,8 @@ CREATE TABLE organizaciones (
     fecha_modificado TIMESTAMP
 );
 
+
+DROP TABLE IF EXISTS roles;
 CREATE TABLE roles (
     id_rol BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(180) NOT NULL UNIQUE,
@@ -57,7 +63,7 @@ VALUES(
 );
 
 
-
+DROP TABLE IF EXISTS usuarios;
 CREATE TABLE usuarios (
     id_usuario BIGSERIAL PRIMARY KEY,
     id_rol BIGINT NOT NULL REFERENCES roles(id_rol),
@@ -69,11 +75,11 @@ CREATE TABLE usuarios (
     password TEXT,
     bloqueado BOOLEAN,
     session_token TEXT,
-    fecha_token TIMESTAMP,
     fecha_creado TIMESTAMP DEFAULT NOW(),
     fecha_modificado TIMESTAMP
 );
 
+DROP TABLE IF EXISTS alertas;
 CREATE TABLE alertas (
     id_alerta BIGSERIAL PRIMARY KEY,
     id_tipo_alerta BIGINT NOT NULL REFERENCES tipos_alerta(id_tipo_alerta),
@@ -87,6 +93,8 @@ CREATE TABLE alertas (
     fecha_creado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+
+DROP TABLE IF EXISTS tipos_sesion;
 CREATE TABLE tipos_sesion (
     id_tipo_sesion BIGSERIAL PRIMARY KEY,
     tipo_sesion VARCHAR(20),
@@ -95,6 +103,7 @@ CREATE TABLE tipos_sesion (
 );
 
 
+DROP TABLE IF EXISTS menus;
 CREATE TABLE menus (
     id_menu BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
@@ -107,6 +116,7 @@ CREATE TABLE menus (
 );
 
 
+DROP TABLE IF EXISTS menu_roles;
 CREATE TABLE menu_roles (
     id_menu_rol BIGSERIAL PRIMARY KEY,
     id_menu BIGINT NOT NULL REFERENCES menus(id_menu),
@@ -116,6 +126,8 @@ CREATE TABLE menu_roles (
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+
+DROP TABLE IF EXISTS familias_especies;
 CREATE TABLE familias_especies (
     id_familia_especie BIGSERIAL PRIMARY KEY,
     nombre_cientifico VARCHAR(255) NOT NULL,
@@ -125,6 +137,7 @@ CREATE TABLE familias_especies (
 );
 
 
+DROP TABLE IF EXISTS especies;
 CREATE TABLE especies (
     id_especie BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
@@ -135,6 +148,7 @@ CREATE TABLE especies (
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+DROP TABLE IF EXISTS observacion;
 CREATE TABLE observacion (
     id_observacion BIGSERIAL PRIMARY KEY,
     id_especie BIGINT NOT NULL REFERENCES especies(id_especie),

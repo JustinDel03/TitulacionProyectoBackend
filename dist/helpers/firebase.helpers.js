@@ -34,12 +34,8 @@ function subirImagen(folder, fileName, fileBuffer, mimeType) {
             stream.on('finish', () => resolve());
             stream.end(fileBuffer);
         });
-        // Generar una URL firmada válida por 1 hora (3600 segundos)
-        const [signedUrl] = yield file.getSignedUrl({
-            action: 'read',
-            expires: Date.now() + 3600 * 1000, // 1 hora
-        });
-        return signedUrl;
+        // Obtener y devolver la URL pública
+        return `https://storage.googleapis.com/${firebase_1.bucket.name}/${filePath}`;
     });
 }
 exports.subirImagen = subirImagen;

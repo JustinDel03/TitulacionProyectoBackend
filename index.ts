@@ -1,3 +1,4 @@
+import "./globalconfig";
 import express from 'express';
 import cors from 'cors';
 import { initDbConnections, closeDbConnections } from './db';
@@ -5,9 +6,11 @@ import usuarioRoutes from './routes/usuario';
 import alertaRoutes from './routes/alerta'
 import config from './config/config';
 
+
 const { maxRetries, retryDelay } = config.retryConfig;
 
 async function startServer() {
+  // dotenv.config();
   let connected = false;
   let attempts = 0;
 

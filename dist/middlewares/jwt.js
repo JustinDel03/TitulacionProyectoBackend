@@ -14,7 +14,6 @@ const methods_helpers_1 = require("../helpers/methods.helpers");
 const message_helpers_1 = require("../helpers/message.helpers");
 const validaTokenJwt = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const token = req.headers['authorization'];
-    console.log("Token que llega del frontend: ", token);
     if (token) {
         const tokenValidate = (0, methods_helpers_1.validateJwt)(token);
         if (tokenValidate) {

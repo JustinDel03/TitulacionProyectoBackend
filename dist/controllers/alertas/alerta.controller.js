@@ -12,24 +12,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrearAlerta = exports.ListaAlertas = void 0;
 const db_1 = require("../../db");
 const firebase_helpers_1 = require("../../helpers/firebase.helpers");
+const methods_helpers_1 = require("../../helpers/methods.helpers");
+const message_helpers_1 = require("../../helpers/message.helpers");
 function ListaAlertas(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Consulta las alertas desde la base de datos
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_alertas');
             const alertas = result.rows;
-            res.status(200).json({
-                error: false,
-                message: 'Usuarios obtenidos',
-                data: alertas
-            });
+            return (0, methods_helpers_1.responseService)(200, alertas, message_helpers_1.messageRespone["200"], false, res);
         }
         catch (err) {
             console.error('Error:', err);
-            res.status(500).json({
-                error: true,
-                message: 'Error interno del servidor',
-            });
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
         }
     });
 }
