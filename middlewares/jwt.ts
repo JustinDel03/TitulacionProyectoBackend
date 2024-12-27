@@ -6,7 +6,6 @@ import { messageRespone } from "../helpers/message.helpers";
 
 export const validaTokenJwt = async(req: Request, res: Response, next: NextFunction)=>{
     const token = req.headers['authorization'];
-
     if(token){
         const tokenValidate = validateJwt(token);
         if(tokenValidate){
@@ -19,3 +18,4 @@ export const validaTokenJwt = async(req: Request, res: Response, next: NextFunct
         return responseService(401, null, messageRespone["401"], true,res);
     }
 }
+

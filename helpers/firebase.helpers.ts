@@ -29,13 +29,8 @@ export async function subirImagen(
     stream.on('finish', () => resolve());
     stream.end(fileBuffer);
   });
+ 
+  // Obtener y devolver la URL pública
+  return `https://storage.googleapis.com/${bucket.name}/${filePath}`;
 
-  // Generar una URL firmada válida por 1 hora (3600 segundos)
-  const [signedUrl] = await file.getSignedUrl({
-    action: 'read',
-    expires: Date.now() + 3600 * 1000, // 1 hora
-  });
-
-  return signedUrl;
 }
-

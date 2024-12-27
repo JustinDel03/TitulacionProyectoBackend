@@ -36,10 +36,7 @@ function ListaUsuario(req, res) {
         }
         catch (err) {
             console.error('Error:', err);
-            res.status(500).json({
-                error: true,
-                message: 'Error interno del servidor',
-            });
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
         }
     });
 }
@@ -99,30 +96,16 @@ function IniciarSesion(req, res) {
             // const sessionToken = crypto.randomBytes(32).toString('hex');
             yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1 WHERE correo = $2', [sessionToken, correo]);
             const resultMenu = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
-            const menu = result.rows.map(row => {
-                return {
-                    menuId: row.id_menu,
-                    nombreMenu: row.nombre_menu,
-                    nombreRol: row.nombre_rol,
-                    icono: row.icono,
-                    url: row.url,
-                    correo: row.correo
-                };
-            });
-            console.log(menu);
-            const datos = {
-                usuario,
+            const menu = resultMenu.rows;
+            const data = {
+                menu,
                 sessionToken
             };
-            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageRespone["200"], false, res);
-            console.log(usuario);
+            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageRespone["200"], false, res);
         }
         catch (error) {
             console.error('Error en el login:', error);
-            res.status(500).json({
-                error: true,
-                message: 'Error interno del servidor',
-            });
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
         }
     });
 }
