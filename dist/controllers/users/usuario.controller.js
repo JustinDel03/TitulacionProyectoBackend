@@ -20,6 +20,7 @@ exports.SubirImagenUsuario = SubirImagenUsuario;
 exports.ListaRoles = ListaRoles;
 const db_1 = require("../../db");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+// import crypto from 'crypto';
 const firebase_1 = require("../../config/firebase");
 const methods_helpers_1 = require("../../helpers/methods.helpers");
 const message_helpers_1 = require("../../helpers/message.helpers");
@@ -36,7 +37,10 @@ function ListaUsuario(req, res) {
         }
         catch (err) {
             console.error('Error:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            res.status(500).json({
+                error: true,
+                message: 'Error interno del servidor',
+            });
         }
     });
 }
@@ -89,23 +93,38 @@ function IniciarSesion(req, res) {
             const sessionToken = (0, methods_helpers_1.createJwt)({
                 id_usuario: usuario.id_usuario,
                 name: usuario.nombres,
-                surname: usuario.apellidos,
+                lastname: usuario.apellidos,
+                rol: usuario.rol,
                 email: usuario.correo,
                 phone: usuario.phone
             });
             // const sessionToken = crypto.randomBytes(32).toString('hex');
             yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1 WHERE correo = $2', [sessionToken, correo]);
             const resultMenu = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
-            const menu = resultMenu.rows;
-            const data = {
-                menu,
+            const menu = result.rows.map(row => {
+                return {
+                    menuId: row.id_menu,
+                    nombreMenu: row.nombre_menu,
+                    nombreRol: row.nombre_rol,
+                    icono: row.icono,
+                    url: row.url,
+                    correo: row.correo
+                };
+            });
+            console.log(menu);
+            const datos = {
+                usuario,
                 sessionToken
             };
-            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageRespone["200"], false, res);
+            console.log(usuario);
         }
         catch (error) {
             console.error('Error en el login:', error);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            res.status(500).json({
+                error: true,
+                message: 'Error interno del servidor',
+            });
         }
     });
 }
