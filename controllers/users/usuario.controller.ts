@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { dbPool } from '../../db';
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
+// import crypto from 'crypto';
 import { bucket } from '../../config/firebase'
 ;import { createJwt, responseService } from '../../helpers/methods.helpers';
 import { messageRespone } from '../../helpers/message.helpers';
@@ -84,7 +84,8 @@ export async function IniciarSesion(req: Request, res: Response) {
     const sessionToken = createJwt({
       id_usuario : usuario.id_usuario,
       name: usuario.nombres,
-      surname: usuario.apellidos,
+      lastname: usuario.apellidos,
+      rol: usuario.rol,
       email: usuario.correo,
       phone: usuario.phone
     })
