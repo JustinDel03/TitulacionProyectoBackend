@@ -88,7 +88,7 @@ export async function IniciarSesion(req: Request, res: Response) {
       rol: usuario.rol,
       email: usuario.correo,
       phone: usuario.phone
-    })
+    }) 
     
 
 

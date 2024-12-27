@@ -1,14 +1,10 @@
 import { Request, Response } from 'express';
 import { dbPool } from '../../db';
-<<<<<<<< HEAD:controllers/alert/alerts.controller.ts
-import { subirImagen } from '../../helpers/firebase.helpers';
-========
+
 import { subirImagen  } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
 import { messageRespone } from '../../helpers/message.helpers';
 
-
->>>>>>>> main:controllers/alertas/alerta.controller.ts
 
 
 export async function ListaAlertas(req: Request, res: Response) {
