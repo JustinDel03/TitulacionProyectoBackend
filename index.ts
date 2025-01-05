@@ -3,8 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import { initDbConnections, closeDbConnections } from './db';
 import usuarioRoutes from './routes/usuario';
-import alertaRoutes from './routes/alerta'
+import alertaRoutes from './routes/alerta';
 import config from './config/config';
+import home from './routes/home.route';
 
 
 const { maxRetries, retryDelay } = config.retryConfig;
@@ -43,6 +44,7 @@ async function startServer() {
   // Rutas
   app.use('/api/Usuario', usuarioRoutes);
   app.use('/api/Alerta', alertaRoutes);
+  app.use('/api',home)
 
     // Inicio del servidor
     const port = process.env.PORT || config.server.port;

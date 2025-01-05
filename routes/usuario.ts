@@ -11,8 +11,10 @@ router.get('/ListaRoles', validaTokenJwt, ListaRoles);
 
 //-------------------------------------- POST -------------------------------------//
 router.post('/IniciarSesion', IniciarSesion);
-router.post('/crear', validaTokenJwt, CrearUsuario);
+router.post('/crear', CrearUsuario);
 router.post('/subirImagen', validaTokenJwt, upload.single('imagen'), SubirImagenUsuario);
+//router.post('/recuperContrasena', RecuperarSesion);
+//router.post('/cambioContrasena', validarTokenJwt, cambioContraseña);
 
 
 export default router;

@@ -7,7 +7,7 @@ import '../globalconfig'
 export const responseService = (codigo: number, datos: any, mensaje: string = "", error: boolean,resp: Response) => {
     resp.statusCode = codigo;
     return resp.json({
-        "datos": datos ? datos : null,
+        "data": datos ? datos : null,
         "mensaje": mensaje,
         "error": error
     });

@@ -19,6 +19,7 @@ const db_1 = require("./db");
 const usuario_1 = __importDefault(require("./routes/usuario"));
 const alerta_1 = __importDefault(require("./routes/alerta"));
 const config_1 = __importDefault(require("./config/config"));
+const home_route_1 = __importDefault(require("./routes/home.route"));
 const { maxRetries, retryDelay } = config_1.default.retryConfig;
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -53,6 +54,7 @@ function startServer() {
         // Rutas
         app.use('/api/Usuario', usuario_1.default);
         app.use('/api/Alerta', alerta_1.default);
+        app.use('/api', home_route_1.default);
         // Inicio del servidor
         const port = process.env.PORT || config_1.default.server.port;
         const server = app.listen(port, () => {

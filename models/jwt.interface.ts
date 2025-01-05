@@ -2,7 +2,7 @@ export interface DatosJwt{
     id_usuario:string|number,
     name:string,
     lastname:string,
-    rol:string,
+    // rol:string,
     email:string,
     phone:number,
 }

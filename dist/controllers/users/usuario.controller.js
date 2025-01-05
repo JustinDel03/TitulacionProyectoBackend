@@ -94,29 +94,33 @@ function IniciarSesion(req, res) {
                 id_usuario: usuario.id_usuario,
                 name: usuario.nombres,
                 lastname: usuario.apellidos,
-                rol: usuario.rol,
+                // rol: usuario.rol,
                 email: usuario.correo,
                 phone: usuario.phone
             });
-            // const sessionToken = crypto.randomBytes(32).toString('hex');
             yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1 WHERE correo = $2', [sessionToken, correo]);
-            const resultMenu = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
-            const menu = result.rows.map(row => {
-                return {
-                    menuId: row.id_menu,
-                    nombreMenu: row.nombre_menu,
-                    nombreRol: row.nombre_rol,
-                    icono: row.icono,
-                    url: row.url,
-                    correo: row.correo
-                };
-            });
-            console.log(menu);
+            // const resultMenu = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
+            // const menu = result.rows.map(row => {
+            //   return {
+            //     menuId: row.id_menu,
+            //     nombreMenu: row.nombre_menu,
+            //     nombreRol: row.nombre_rol,
+            //     icono: row.icono,
+            //     url: row.url,
+            //     correo: row.correo
+            //   };
+            // });
+            // console.log(menu);
             const datos = {
-                usuario,
-                sessionToken
+                id_user: usuario.id_usuario,
+                name: usuario.nombres,
+                lastName: usuario.apellidos,
+                email: usuario.correo,
+                phone: usuario.telefono,
+                photo: usuario.imagen,
+                token: usuario.session_token
             };
-            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageResponse["200"], false, res);
             console.log(usuario);
         }
         catch (error) {

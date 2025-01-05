@@ -6,7 +6,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "nodemon dist/index.js",
-    "serve": "nodemon dist/index.js",
     "build": "tsc",
     "dev": "tsc && node dist/index.js"
   },
@@ -21,10 +20,11 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.0",
     "firebase-admin": "^13.0.1",
+    "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
-    "jsonwebtoken": "^9.0.2",
     "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.16",
     "nodemon": "^3.1.7",
     "omegaapi": "file:",
     "pg": "^8.11.3",

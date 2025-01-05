@@ -3,7 +3,7 @@ import { dbPool } from '../../db';
 
 import { subirImagen  } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
-import { messageRespone } from '../../helpers/message.helpers';
+import { messageResponse } from '../../helpers/message.helpers';
 
 
 
@@ -15,11 +15,11 @@ export async function ListaAlertas(req: Request, res: Response) {
     const result = await dbPool.query('SELECT * FROM tbv_alertas');
     const alertas = result.rows;
 
-    return responseService(200, alertas, messageRespone["200"], false, res );
+    return responseService(200, alertas, messageResponse["200"], false, res );
 
   } catch (err) {
     console.error('Error:', err);
-    responseService(500,null, messageRespone["500"], false, res)
+    responseService(500,null, messageResponse["500"], false, res)
 
   }
 }

@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 // import crypto from 'crypto';
 import { bucket } from '../../config/firebase'
 ;import { createJwt, responseService } from '../../helpers/methods.helpers';
-import { messageRespone } from '../../helpers/message.helpers';
+import { messageResponse } from '../../helpers/message.helpers';
 
 
 export async function ListaUsuario(req: Request, res: Response) {
@@ -85,7 +85,7 @@ export async function IniciarSesion(req: Request, res: Response) {
       id_usuario : usuario.id_usuario,
       name: usuario.nombres,
       lastname: usuario.apellidos,
-      rol: usuario.rol,
+      // rol: usuario.rol,
       email: usuario.correo,
       phone: usuario.phone
     }) 
@@ -93,35 +93,40 @@ export async function IniciarSesion(req: Request, res: Response) {
 
 
 
-    // const sessionToken = crypto.randomBytes(32).toString('hex');
     await dbPool.query(
       'UPDATE usuarios SET session_token = $1 WHERE correo = $2',
       [sessionToken, correo]
     );
-    const resultMenu = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
+    // const resultMenu = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
 
     
-    const menu = result.rows.map(row => {
-      return {
-        menuId: row.id_menu,
-        nombreMenu: row.nombre_menu,
-        nombreRol: row.nombre_rol,
-        icono: row.icono,
-        url: row.url,
-        correo: row.correo
-      };
-    });
+    // const menu = result.rows.map(row => {
+    //   return {
+    //     menuId: row.id_menu,
+    //     nombreMenu: row.nombre_menu,
+    //     nombreRol: row.nombre_rol,
+    //     icono: row.icono,
+    //     url: row.url,
+    //     correo: row.correo
+    //   };
+    // });
 
 
-    console.log(menu);
+    
+    // console.log(menu);
 
     const datos = {
-      usuario,
-      sessionToken
+      id_user: usuario.id_usuario,
+      name : usuario.nombres,
+      lastName: usuario.apellidos,
+      email:  usuario.correo,
+      phone: usuario.telefono,
+      photo: usuario.imagen, 
+      token: usuario.session_token
     }
 
 
-    return responseService(200, datos, messageRespone["200"], false, res );
+    return responseService(200, datos, messageResponse["200"], false, res );
     console.log(usuario);
   } catch (error) {
     console.error('Error en el login:', error);
