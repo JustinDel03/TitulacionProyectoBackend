@@ -12,6 +12,7 @@ router.get('/ListaRoles', jwt_1.validaTokenJwt, usuario_controller_1.ListaRoles)
 router.post('/IniciarSesion', usuario_controller_1.IniciarSesion);
 router.post('/crear', usuario_controller_1.CrearUsuario);
 router.post('/subirImagen', jwt_1.validaTokenJwt, uploadMiddleware_1.upload.single('imagen'), usuario_controller_1.SubirImagenUsuario);
+router.post('/cambiarContrasena', jwt_1.validaTokenJwt, usuario_controller_1.cambiarContrasena);
 //router.post('/recuperContrasena', RecuperarSesion);
 //router.post('/cambioContrasena', validarTokenJwt, cambioContraseña);
 exports.default = router;

@@ -24,9 +24,6 @@ CREATE VIEW tbv_usuarios AS
         u.telefono,
         u.imagen,
         u.session_token,
-		u.bloqueado,
-        u.fecha_creado,
-        u.fecha_modificado,
         r.nombre AS nombre_rol
     FROM usuarios u
         JOIN roles r ON u.id_rol = r.id_rol;

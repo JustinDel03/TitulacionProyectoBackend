@@ -18,6 +18,7 @@ exports.IniciarSesion = IniciarSesion;
 exports.CrearUsuario = CrearUsuario;
 exports.SubirImagenUsuario = SubirImagenUsuario;
 exports.ListaRoles = ListaRoles;
+exports.cambiarContrasena = cambiarContrasena;
 const db_1 = require("../../db");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 // import crypto from 'crypto';
@@ -94,9 +95,8 @@ function IniciarSesion(req, res) {
                 id_usuario: usuario.id_usuario,
                 name: usuario.nombres,
                 lastname: usuario.apellidos,
-                // rol: usuario.rol,
                 email: usuario.correo,
-                phone: usuario.phone
+                phone: usuario.telefono
             });
             yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1 WHERE correo = $2', [sessionToken, correo]);
             // const resultMenu = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
@@ -234,3 +234,45 @@ function ListaRoles(req, res) {
         }
     });
 }
+function cambiarContrasena(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const body = req.body;
+        const datos = JSON.parse((req.headers.datos));
+        try {
+            const oldPassword = body.oldPassword;
+            const newPassword = body.newPassword;
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [datos.email]);
+            const usuario = result.rows[0];
+            const isPassword_valid = yield bcrypt_1.default.compare(oldPassword, usuario.password);
+            if (!isPassword_valid) {
+                return (0, methods_helpers_1.responseService)(400, null, "La contraseña no es correcta", true, res);
+            }
+            usuario.password = yield bcrypt_1.default.hash(newPassword, 10);
+            const query = `CALL sp_cambiar_contrasena($1, $2);`;
+            const values = [datos.email, usuario.password];
+            yield db_1.dbPool.query(query, values);
+            return (0, methods_helpers_1.responseService)(200, null, 'Contraseña cambiada exitosamente', false, res);
+        }
+        catch (error) {
+            console.error('Error al cambiar contraseña:', error);
+            // res.status(500).json({
+            //   error: true,
+            //   message: 'Error interno del servidor',
+            // });
+            return (0, methods_helpers_1.responseService)(500, null, 'Ocurrio un error en el servidor', true, res);
+        }
+    });
+}
+// export async function recuperContrasena(req: Request, res: Response) {
+//   const {correo} = req.body;
+//   try {
+//     const userExist = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
+//     if (userExist.rowCount === 0) {
+//       return responseService(400, null, "Usuario no registrado", true, res);
+//     }
+//     const token = jwt.sign({ correo }, process.env.KEY_JWT!, {
+//             expiresIn: process.env.DURATION, // Usa un valor predeterminado si HORAS_JWT no está definido
+//         });
+//   } catch (error) {
+//   }
+// }

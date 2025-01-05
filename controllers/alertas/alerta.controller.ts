@@ -72,3 +72,18 @@ export async function CrearAlerta(req: Request, res: Response) {
     });
   }
 }
+
+
+export async function tipos_alertas(req: Request, res: Response) {
+  try {
+    const result = await dbPool.query('SELECT * FROM tbv_tipos_alertas');
+    const tipo_alertas = result.rows;
+
+    return responseService(200, tipo_alertas, messageResponse["200"], false, res );
+
+  } catch (err) {
+    console.error('Error:', err);
+    responseService(500,null, messageResponse["500"], false, res)
+
+  }
+}

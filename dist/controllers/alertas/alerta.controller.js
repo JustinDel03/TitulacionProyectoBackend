@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListaAlertas = ListaAlertas;
 exports.CrearAlerta = CrearAlerta;
+exports.tipos_alertas = tipos_alertas;
 const db_1 = require("../../db");
 const firebase_helpers_1 = require("../../helpers/firebase.helpers");
 const methods_helpers_1 = require("../../helpers/methods.helpers");
@@ -69,6 +70,19 @@ function CrearAlerta(req, res) {
                 error: true,
                 message: 'Error al subir la imagen o guardar la alerta',
             });
+        }
+    });
+}
+function tipos_alertas(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_tipos_alertas');
+            const tipo_alertas = result.rows;
+            return (0, methods_helpers_1.responseService)(200, tipo_alertas, message_helpers_1.messageResponse["200"], false, res);
+        }
+        catch (err) {
+            console.error('Error:', err);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
         }
     });
 }

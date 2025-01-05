@@ -57,3 +57,26 @@ BEGIN
     );
 END;
 $$;
+
+
+
+CREATE OR REPLACE PROCEDURE sp_cambiar_contrasena(
+    user_email TEXT, -- Puede ser correo o id_usuario
+    new_password TEXT
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    -- Actualizar la contraseña directamente
+    UPDATE usuarios
+    SET 
+        password = new_password, -- La contraseña ya viene cifrada
+        fecha_modificado = NOW() -- Actualiza la fecha de modificación
+    WHERE 
+        correo = user_email;
+
+    -- Verificar si se actualizó al menos un registro
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Usuario no encontrado.';
+    END IF;
+END;
+$$;

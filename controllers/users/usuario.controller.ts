@@ -5,7 +5,8 @@ import bcrypt from 'bcrypt';
 import { bucket } from '../../config/firebase'
 ;import { createJwt, responseService } from '../../helpers/methods.helpers';
 import { messageResponse } from '../../helpers/message.helpers';
-
+import { DatosJwt } from '../../models/jwt.interface';
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export async function ListaUsuario(req: Request, res: Response) {
   try {
@@ -85,9 +86,9 @@ export async function IniciarSesion(req: Request, res: Response) {
       id_usuario : usuario.id_usuario,
       name: usuario.nombres,
       lastname: usuario.apellidos,
-      // rol: usuario.rol,
+      
       email: usuario.correo,
-      phone: usuario.phone
+      phone: usuario.telefono
     }) 
     
 
@@ -258,4 +259,56 @@ export async function ListaRoles(req: Request, res: Response) {
       message: 'Error interno del servidor',
     });
   }
+
+
+  
+  
 }
+
+export async function cambiarContrasena(req: Request, res: Response){
+  const body = req.body;
+  const datos = JSON.parse((req.headers.datos) as string ) as DatosJwt;
+    
+  try {
+    const oldPassword = body.oldPassword;
+    const newPassword = body.newPassword;
+    const result = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [datos.email]);
+    const usuario = result.rows[0];
+    const isPassword_valid = await bcrypt.compare(oldPassword, usuario.password);
+    if (!isPassword_valid) {
+      return responseService(400, null, "La contraseña no es correcta", true, res);
+    }
+
+    
+    usuario.password = await bcrypt.hash(newPassword, 10);
+
+    const query = `CALL sp_cambiar_contrasena($1, $2);`;
+    const values = [datos.email, usuario.password];
+    await dbPool.query(query, values);
+
+    return responseService(200, null, 'Contraseña cambiada exitosamente', false, res);
+  } catch (error) {
+    console.error('Error al cambiar contraseña:', error);
+    // res.status(500).json({
+    //   error: true,
+    //   message: 'Error interno del servidor',
+    // });
+    return responseService(500, null, 'Ocurrio un error en el servidor', true, res);
+  }
+}
+
+// export async function recuperContrasena(req: Request, res: Response) {
+//   const {correo} = req.body;
+
+//   try {
+//     const userExist = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
+//     if (userExist.rowCount === 0) {
+//       return responseService(400, null, "Usuario no registrado", true, res);
+//     }
+//     const token = jwt.sign({ correo }, process.env.KEY_JWT!, {
+//             expiresIn: process.env.DURATION, // Usa un valor predeterminado si HORAS_JWT no está definido
+//         });
+//   } catch (error) {
+    
+//   }
+// }

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ListaUsuario, IniciarSesion, CrearUsuario, SubirImagenUsuario, ListaRoles  } from '../controllers/users/usuario.controller'
+import { ListaUsuario, IniciarSesion, CrearUsuario, SubirImagenUsuario, ListaRoles, cambiarContrasena  } from '../controllers/users/usuario.controller'
 import { upload } from '../middlewares/uploadMiddleware';
 import { validaTokenJwt } from '../middlewares/jwt';
 
@@ -13,6 +13,7 @@ router.get('/ListaRoles', validaTokenJwt, ListaRoles);
 router.post('/IniciarSesion', IniciarSesion);
 router.post('/crear', CrearUsuario);
 router.post('/subirImagen', validaTokenJwt, upload.single('imagen'), SubirImagenUsuario);
+router.post('/cambiarContrasena', validaTokenJwt, cambiarContrasena);
 //router.post('/recuperContrasena', RecuperarSesion);
 //router.post('/cambioContrasena', validarTokenJwt, cambioContraseña);
 

@@ -2,9 +2,12 @@ import { Request, Response } from "express";
 import { dbPool } from "../../db";
 import { responseService } from "../../helpers/methods.helpers";
 import { messageResponse } from "../../helpers/message.helpers";
+import { DatosJwt } from "../../models/jwt.interface";
 
 
 export async function Home(req: Request, res: Response) {
+
+    
     try{
         const [
             resultObservation,
