@@ -43,9 +43,10 @@ async function startServer() {
           "Número máximo de intentos alcanzado. No se pudo conectar a la base de datos."
         );
         process.exit(1);
+
       }
     }
-  }
+
 
 
 
@@ -54,9 +55,12 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use(cors());
 
+   
+
   // WebSockets
   io.on("connection", (socket) => {
     console.log(`🔌 Cliente conectado: ${socket.id}`);
+
 
     socket.on("disconnect", () => {
       console.log(`❌ Cliente desconectado: ${socket.id}`);
@@ -79,4 +83,5 @@ async function startServer() {
   });
 }
 
-startServer();
+
+  startServer();

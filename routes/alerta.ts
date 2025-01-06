@@ -8,6 +8,8 @@ const router: Router = Router();
 router.get('/ListaAlertas', validaTokenJwt, ListaAlertas);
 
 //-------------------------------------- POST -------------------------------------//
+
 router.post('/CrearAlerta', upload.array('imagenes', 3), CrearAlerta);
+
 
 export default router;

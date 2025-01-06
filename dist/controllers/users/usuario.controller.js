@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListaRoles = exports.SubirImagenUsuario = exports.EliminarUsuario = exports.EditarUsuario = exports.CrearUsuario = exports.IniciarSesion = exports.ListaUsuario = void 0;
+
 const db_1 = require("../../db");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const firebase_1 = require("../../config/firebase");
@@ -23,18 +24,28 @@ function ListaUsuario(req, res) {
         try {
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios');
             const usuarios = result.rows;
-            return (0, methods_helpers_1.responseService)(200, usuarios, message_helpers_1.messageRespone["200"], false, res);
+            res.status(200).json({
+                error: false,
+                message: 'Usuarios obtenidos',
+                data: usuarios
+            });
         }
         catch (err) {
             console.error('Error:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            res.status(500).json({
+                error: true,
+                message: 'Error interno del servidor',
+            });
         }
     });
 }
+
 exports.ListaUsuario = ListaUsuario;
+
 function IniciarSesion(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { correo, password, tipo_sesion } = req.body;
+        const { correo, password } = req.body;
+        const { tipo_sesion } = req.headers;
         if (!correo || !password) {
             return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
         }
@@ -51,29 +62,44 @@ function IniciarSesion(req, res) {
             const sessionToken = (0, methods_helpers_1.createJwt)({
                 id_usuario: usuario.id_usuario,
                 name: usuario.nombres,
-                rol: usuario.nombre_rol,
-                surname: usuario.apellidos,
+                lastname: usuario.apellidos,
+                rol: usuario.rol,
                 email: usuario.correo,
                 phone: usuario.phone
             });
+            // const sessionToken = crypto.randomBytes(32).toString('hex');
             yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1 WHERE correo = $2', [sessionToken, correo]);
             const resultMenu = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
-            const menu = resultMenu.rows;
-            const data = {
-                menu,
+            const menu = result.rows.map(row => {
+                return {
+                    menuId: row.id_menu,
+                    nombreMenu: row.nombre_menu,
+                    nombreRol: row.nombre_rol,
+                    icono: row.icono,
+                    url: row.url,
+                    correo: row.correo
+                };
+            });
+            console.log(menu);
+            const datos = {
+                usuario,
                 sessionToken
             };
-            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageRespone["200"], false, res);
+            console.log(usuario);
         }
         catch (error) {
             console.error('Error en el login:', error);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            res.status(500).json({
+                error: true,
+                message: 'Error interno del servidor',
+            });
         }
     });
 }
-exports.IniciarSesion = IniciarSesion;
 function CrearUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+
         const data = req.body;
         if (!data.id_rol || !data.nombres || !data.apellidos || !data.correo || !data.password) {
             return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
@@ -92,6 +118,7 @@ function CrearUsuario(req, res) {
             data.id_rol = parsedIdRol;
             data.imagen = '';
             console.log('Usuario:', data);
+
             const query = `CALL sp_crear_usuario($1);`;
             const values = [JSON.stringify(data)];
             yield db_1.dbPool.query(query, values);
@@ -151,6 +178,7 @@ function EliminarUsuario(req, res) {
     });
 }
 exports.EliminarUsuario = EliminarUsuario;
+
 function SubirImagenUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!req.file) {
@@ -180,7 +208,6 @@ function SubirImagenUsuario(req, res) {
         }
     });
 }
-exports.SubirImagenUsuario = SubirImagenUsuario;
 function ListaRoles(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -193,4 +220,3 @@ function ListaRoles(req, res) {
         }
     });
 }
-exports.ListaRoles = ListaRoles;
