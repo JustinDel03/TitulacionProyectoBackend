@@ -35,10 +35,9 @@ export async function CrearAlerta(req: Request, res: Response) {
 
   // Validar que se haya enviado un archivo
   if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-    return res.status(400).json({
-      error: true,
-      message: 'No se ha proporcionado ninguna imagen',
-    });
+
+    return responseService(400, null, messageRespone["400"], true, res);
+  
   }
 
 
@@ -109,7 +108,7 @@ export async function CambiarEstadoAlerta(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", alertaActualizada);
 
-    return responseService(200, alertaActualizada, "Estado de alerta actualizado", false, res);
+    return responseService(200, alertaActualizada,messageRespone["200"], false, res);
 
   } catch (error) {
     console.error("Error al cambiar el estado de la alerta:", error);

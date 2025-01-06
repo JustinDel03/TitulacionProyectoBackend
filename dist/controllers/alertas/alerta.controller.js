@@ -39,10 +39,7 @@ function CrearAlerta(req, res) {
         }
         // Validar que se haya enviado un archivo
         if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-            return res.status(400).json({
-                error: true,
-                message: 'No se ha proporcionado ninguna imagen',
-            });
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
         }
         try {
             // Subir las imágenes a Firebase Storage y obtener las URLs firmadas
@@ -86,7 +83,7 @@ function CambiarEstadoAlerta(req, res) {
             // 📢 Emitimos la actualización de estado a los clientes conectados
             const io = req.app.get("socketio");
             io.emit("actualizarAlerta", alertaActualizada);
-            return (0, methods_helpers_1.responseService)(200, alertaActualizada, "Estado de alerta actualizado", false, res);
+            return (0, methods_helpers_1.responseService)(200, alertaActualizada, message_helpers_1.messageRespone["200"], false, res);
         }
         catch (error) {
             console.error("Error al cambiar el estado de la alerta:", error);
