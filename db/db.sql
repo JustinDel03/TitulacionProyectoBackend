@@ -88,7 +88,9 @@ CREATE TABLE alertas (
     id_estado BIGINT REFERENCES estados_alerta(id_estado_alerta),
     coordenada_longitud DECIMAL(9,6),
     coordenada_latitud DECIMAL(9,6),
-    imagen TEXT,
+    imagen_1 TEXT,
+    imagen_2 TEXT,
+    imagen_3 TEXT,
     descripcion TEXT,
     fecha_creado TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -161,5 +163,22 @@ CREATE TABLE observacion (
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+DROP TABLE IF EXISTS senderos;
+CREATE TABLE senderos (
+    id_sendero BIGSERIAL PRIMARY KEY,
+    nombre_sendero TEXT,
+    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
+    fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO senderos (
+	nombre_sendero
+)
+VALUES(
+	'nombre_sendero',
+	'Sendero Buena Vista',
+	'Sendero Higuerón',
+	'Sendero Canoa'
+);
 
 

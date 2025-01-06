@@ -12,6 +12,9 @@ const upload = multer({
       cb(new Error('Solo se permiten imágenes'));
     }
   },
+  limits: {
+    files: 3, // Límite de 3 archivos
+  },
 });
 
 export { upload };
