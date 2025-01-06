@@ -12,7 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.closeDbConnections = exports.initDbConnections = exports.dbPool = void 0;
+exports.dbPool = void 0;
+exports.initDbConnections = initDbConnections;
+exports.closeDbConnections = closeDbConnections;
 const pg_1 = require("pg");
 const config_1 = __importDefault(require("./config/config"));
 // Inicializa las conexiones a la base de datos
@@ -30,7 +32,6 @@ function initDbConnections() {
         }
     });
 }
-exports.initDbConnections = initDbConnections;
 // Finaliza las conexiones (útil al cerrar la aplicación)
 function closeDbConnections() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -40,4 +41,3 @@ function closeDbConnections() {
         }
     });
 }
-exports.closeDbConnections = closeDbConnections;
