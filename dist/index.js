@@ -15,58 +15,64 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("./globalconfig");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const http_1 = require("http"); // Importamos HTTP para WebSockets
+const socket_io_1 = require("socket.io"); // Importamos Socket.io
 const db_1 = require("./db");
 const usuario_1 = __importDefault(require("./routes/usuario"));
 const alerta_1 = __importDefault(require("./routes/alerta"));
 const config_1 = __importDefault(require("./config/config"));
 const { maxRetries, retryDelay } = config_1.default.retryConfig;
+const app = (0, express_1.default)();
+const server = (0, http_1.createServer)(app);
+const io = new socket_io_1.Server(server, {
+    cors: {
+        origin: "http://localhost:4200",
+        methods: ["GET", "POST"],
+    },
+});
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
-        // dotenv.config();
         let connected = false;
         let attempts = 0;
-        // Intentos de reconexión a la base de datos
         while (!connected && attempts < maxRetries) {
             try {
                 yield (0, db_1.initDbConnections)();
                 connected = true;
-                console.log('Conexiones a la base de datos inicializadas.');
             }
             catch (error) {
                 attempts++;
                 console.error(`Error al conectar a la base de datos (Intento ${attempts}/${maxRetries}):`, error);
                 if (attempts < maxRetries) {
                     console.log(`Reintentando en ${retryDelay / 1000} segundos...`);
-                    yield new Promise(resolve => setTimeout(resolve, retryDelay));
+                    yield new Promise((resolve) => setTimeout(resolve, retryDelay));
                 }
                 else {
-                    console.error('Número máximo de intentos alcanzado. No se pudo conectar a la base de datos.');
+                    console.error("Número máximo de intentos alcanzado. No se pudo conectar a la base de datos.");
                     process.exit(1);
                 }
             }
         }
-        const app = (0, express_1.default)();
-        // Middlewares
+        // Middleware
         app.use(express_1.default.json());
         app.use(express_1.default.urlencoded({ extended: true }));
         app.use((0, cors_1.default)());
-        // Rutas
-        app.use('/api/Usuario', usuario_1.default);
-        app.use('/api/Alerta', alerta_1.default);
-        // Inicio del servidor
-        const port = process.env.PORT || config_1.default.server.port;
-        const server = app.listen(port, () => {
-            console.log(`Servidor corriendo en http://localhost:${port}`);
+        // WebSockets
+        io.on("connection", (socket) => {
+            console.log(`🔌 Cliente conectado: ${socket.id}`);
+            socket.on("disconnect", () => {
+                console.log(`❌ Cliente desconectado: ${socket.id}`);
+            });
         });
-        // Manejo del cierre de la aplicación
-        process.on('SIGINT', () => __awaiter(this, void 0, void 0, function* () {
-            console.log('Deteniendo servidor...');
-            server.close(() => __awaiter(this, void 0, void 0, function* () {
-                yield (0, db_1.closeDbConnections)();
-                console.log('Servidor detenido correctamente.');
-                process.exit(0);
-            }));
-        }));
+        // Exponer io para su uso en controladores
+        app.set("socketio", io);
+        // Rutas API
+        app.use("/api/Usuario", usuario_1.default);
+        app.use("/api/Alerta", alerta_1.default);
+        // Iniciar servidor
+        const port = process.env.PORT || config_1.default.server.port;
+        server.listen(port, () => {
+            console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+        });
     });
 }
 startServer();

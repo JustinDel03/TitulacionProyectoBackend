@@ -1,64 +1,87 @@
 import "./globalconfig";
-import express from 'express';
-import cors from 'cors';
-import { initDbConnections, closeDbConnections } from './db';
-import usuarioRoutes from './routes/usuario';
-import alertaRoutes from './routes/alerta'
-import config from './config/config';
-
+import express from "express";
+import cors from "cors";
+import { createServer } from "http"; // Importamos HTTP para WebSockets
+import { Server } from "socket.io"; // Importamos Socket.io
+import { initDbConnections, closeDbConnections } from "./db";
+import usuarioRoutes from "./routes/usuario";
+import alertaRoutes from "./routes/alerta";
+import config from "./config/config";
 
 const { maxRetries, retryDelay } = config.retryConfig;
 
+
+const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:4200",
+    methods: ["GET", "POST"],
+  },
+});
+
+
 async function startServer() {
-  // dotenv.config();
   let connected = false;
   let attempts = 0;
 
-    // Intentos de reconexión a la base de datos
-    while (!connected && attempts < maxRetries) {
-      try {
-        await initDbConnections();
-        connected = true;
-        console.log('Conexiones a la base de datos inicializadas.');
-      } catch (error) {
-        attempts++;
-        console.error(`Error al conectar a la base de datos (Intento ${attempts}/${maxRetries}):`, error);
-        if (attempts < maxRetries) {
-          console.log(`Reintentando en ${retryDelay / 1000} segundos...`);
-          await new Promise(resolve => setTimeout(resolve, retryDelay));
-        } else {
-          console.error('Número máximo de intentos alcanzado. No se pudo conectar a la base de datos.');
-          process.exit(1);
-        }
+  while (!connected && attempts < maxRetries) {
+    try {
+      await initDbConnections();
+      connected = true;
+    } catch (error) {
+      attempts++;
+      console.error(
+        `Error al conectar a la base de datos (Intento ${attempts}/${maxRetries}):`,
+        error
+      );
+      if (attempts < maxRetries) {
+        console.log(`Reintentando en ${retryDelay / 1000} segundos...`);
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      } else {
+        console.error(
+          "Número máximo de intentos alcanzado. No se pudo conectar a la base de datos."
+        );
+        process.exit(1);
+
       }
     }
 
-    const app = express();
 
-    // Middlewares
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
-    app.use(cors());
 
-  // Rutas
-  app.use('/api/Usuario', usuarioRoutes);
-  app.use('/api/Alerta', alertaRoutes);
 
-    // Inicio del servidor
-    const port = process.env.PORT || config.server.port;
-    const server = app.listen(port, () => {
-      console.log(`Servidor corriendo en http://localhost:${port}`);
+  // Middleware
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cors());
+
+   
+
+  // WebSockets
+  io.on("connection", (socket) => {
+    console.log(`🔌 Cliente conectado: ${socket.id}`);
+
+
+    socket.on("disconnect", () => {
+      console.log(`❌ Cliente desconectado: ${socket.id}`);
     });
+  });
 
-    // Manejo del cierre de la aplicación
-    process.on('SIGINT', async () => {
-      console.log('Deteniendo servidor...');
-      server.close(async () => {
-        await closeDbConnections();
-        console.log('Servidor detenido correctamente.');
-        process.exit(0);
-      });
-    });
-  }
+  // Exponer io para su uso en controladores
+  app.set("socketio", io);
+
+  // Rutas API
+  app.use("/api/Usuario", usuarioRoutes);
+  app.use("/api/Alerta", alertaRoutes);
+
+
+
+  // Iniciar servidor
+  const port = process.env.PORT || config.server.port;
+  server.listen(port, () => {
+    console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+  });
+}
+
 
   startServer();
