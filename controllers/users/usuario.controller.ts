@@ -33,21 +33,21 @@ export async function IniciarSesion(req: Request, res: Response) {
   const {tipo_sesion} = req.headers;
 
   if (!correo || !password) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   try {
     const result = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
 
     if (result.rowCount === 0) {
-      return responseService(400, null, messageRespone["400"], true, res);
+      return responseService(400, null, messageResponse["400"], true, res);
     }
 
     const usuario = result.rows[0];
     const isPassword_valid = await bcrypt.compare(password, usuario.password);
 
     if (!isPassword_valid) {
-      return responseService(400, null, messageRespone["400"], true, res);
+      return responseService(400, null, messageResponse["400"], true, res);
     }
 
     const sessionToken = createJwt({
@@ -112,24 +112,24 @@ export async function CrearUsuario(req: Request, res: Response) {
 
 
 
-  const usuario = req.body;
-  const id_rol = parseInt(usuario.id_rol);
-  const nombres = usuario.nombres;
-  const apellidos = usuario.apellidos;
-  const correo = usuario.correo;
-  const password = usuario.password;
+  const data = req.body;
+  const id_rol = parseInt(data.id_rol);
+  const nombres = data.nombres;
+  const apellidos = data.apellidos;
+  const correo = data.correo;
+  const password = data.password;
   
-  console.log(usuario.nombre)
+  console.log(data.nombre)
 
 
 
   if (!data.id_rol || !data.nombres || !data.apellidos || !data.correo || !data.password) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   const parsedIdRol = parseInt(data.id_rol);
   if (isNaN(parsedIdRol)) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   try {
@@ -139,7 +139,7 @@ export async function CrearUsuario(req: Request, res: Response) {
     );
 
     if (userExist.rowCount !== 0) {
-      return responseService(400, null, messageRespone["400"], true, res);
+      return responseService(400, null, messageResponse["400"], true, res);
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -157,12 +157,12 @@ export async function CrearUsuario(req: Request, res: Response) {
 
     await dbPool.query(query, values);
 
-    return responseService(201, null, messageRespone["201"], false, res);
+    return responseService(201, null, messageResponse["201"], false, res);
 
   } catch (err) {
     console.error('Error al crear el usuario:', err);
 
-    responseService(500, null, messageRespone["500"], true, res);
+    responseService(500, null, messageResponse["500"], true, res);
   }
 }
 
@@ -170,12 +170,12 @@ export async function EditarUsuario(req: Request, res: Response) {
   const data = req.body;
 
   if (!data.id_rol || !data.nombres || !data.apellidos || !data.correo) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   const parsedIdRol = parseInt(data.id_rol);
   if (isNaN(parsedIdRol)) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   try {
@@ -195,11 +195,11 @@ export async function EditarUsuario(req: Request, res: Response) {
 
     // Responder al cliente
 
-    return responseService(201, null, messageRespone["200"], false, res);
+    return responseService(201, null, messageResponse["200"], false, res);
 
   } catch (err) {
     console.error('Error al editar el usuario:', err);
-    return responseService(500, null, messageRespone["500"], true, res);
+    return responseService(500, null, messageResponse["500"], true, res);
   }
 }
 
@@ -209,17 +209,17 @@ export async function EliminarUsuario(req: Request, res: Response) {
   const { id_usuario } = req.params;
 
   if (!id_usuario) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   try {
     await dbPool.query('DELETE FROM usuarios WHERE id_usuario = $1', [id_usuario]);
 
-    return responseService(200, null, messageRespone["200"], false, res);
+    return responseService(200, null, messageResponse["200"], false, res);
 
   } catch (err) {
     console.error('Error al eliminar el usuario:', err);
-    return responseService(500, null, messageRespone["500"], true, res);
+    return responseService(500, null, messageResponse["500"], true, res);
   
   }
 }
@@ -230,7 +230,7 @@ export async function EliminarUsuario(req: Request, res: Response) {
 
 export async function SubirImagenUsuario(req: Request, res: Response) {
   if (!req.file) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   const { originalname, buffer } = req.file;
@@ -246,14 +246,14 @@ export async function SubirImagenUsuario(req: Request, res: Response) {
     blobStream.on('error', (err) => {
       console.error('Error al subir la imagen:', err);
       
-      return responseService(500, null, messageRespone["500"], true, res);
+      return responseService(500, null, messageResponse["500"], true, res);
       
     });
 
     blobStream.on('finish', async () => {
       const public_url = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
-      return responseService(200, { image_url: public_url }, messageRespone["200"], false, res);
+      return responseService(200, { image_url: public_url }, messageResponse["200"], false, res);
 
     });
 
@@ -261,7 +261,7 @@ export async function SubirImagenUsuario(req: Request, res: Response) {
   } catch (err) {
     console.error('Error interno al subir la imagen:', err);
 
-    responseService(500, null, messageRespone["500"], true, res);
+    responseService(500, null, messageResponse["500"], true, res);
     
   }
 }
@@ -272,7 +272,7 @@ export async function ListaRoles(req: Request, res: Response) {
     const result = await dbPool.query('SELECT * FROM roles');
 
     const roles = result.rows
-    return responseService(200, roles, messageRespone["200"], false, res );
+    return responseService(200, roles, messageResponse["200"], false, res );
 
   } catch (err) {
     console.error('Error:', err);

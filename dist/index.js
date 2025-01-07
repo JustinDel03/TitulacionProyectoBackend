@@ -52,29 +52,29 @@ function startServer() {
                     process.exit(1);
                 }
             }
-        }
-        // Middleware
-        app.use(express_1.default.json());
-        app.use(express_1.default.urlencoded({ extended: true }));
-        app.use((0, cors_1.default)());
-        // WebSockets
-        io.on("connection", (socket) => {
-            console.log(`🔌 Cliente conectado: ${socket.id}`);
-            socket.on("disconnect", () => {
-                console.log(`❌ Cliente desconectado: ${socket.id}`);
+            // Middleware
+            app.use(express_1.default.json());
+            app.use(express_1.default.urlencoded({ extended: true }));
+            app.use((0, cors_1.default)());
+            // WebSockets
+            io.on("connection", (socket) => {
+                console.log(`🔌 Cliente conectado: ${socket.id}`);
+                socket.on("disconnect", () => {
+                    console.log(`❌ Cliente desconectado: ${socket.id}`);
+                });
             });
-        });
-        // Exponer io para su uso en controladores
-        app.set("socketio", io);
-        // Rutas API
-        app.use("/api/Usuario", usuario_1.default);
-        app.use("/api/Alerta", alerta_1.default);
-        app.use('/api', home_route_1.default);
-        // Iniciar servidor
-        const port = process.env.PORT || config_1.default.server.port;
-        server.listen(port, () => {
-            console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
-        });
+            // Exponer io para su uso en controladores
+            app.set("socketio", io);
+            // Rutas API
+            app.use("/api/Usuario", usuario_1.default);
+            app.use("/api/Alerta", alerta_1.default);
+            app.use('/api', home_route_1.default);
+            // Iniciar servidor
+            const port = process.env.PORT || config_1.default.server.port;
+            server.listen(port, () => {
+                console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+            });
+        }
     });
 }
 startServer();

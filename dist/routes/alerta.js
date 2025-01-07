@@ -9,7 +9,5 @@ const router = (0, express_1.Router)();
 router.get('/ListaAlertas', jwt_1.validaTokenJwt, alerta_controller_1.ListaAlertas);
 router.get('/tipo_alertas', alerta_controller_1.tipos_alertas);
 //-------------------------------------- POST -------------------------------------//
-
 router.post('/CrearAlerta', uploadMiddleware_1.upload.array('imagenes', 3), alerta_controller_1.CrearAlerta);
-
 exports.default = router;
