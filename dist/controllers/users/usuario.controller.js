@@ -120,8 +120,8 @@ function IniciarSesion(req, res) {
                 photo: usuario.imagen,
                 token: usuario.session_token
             };
-            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageResponse["200"], false, res);
             console.log(usuario);
+            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (error) {
             console.error('Error en el login:', error);

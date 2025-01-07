@@ -127,8 +127,8 @@ export async function IniciarSesion(req: Request, res: Response) {
     }
 
 
-    return responseService(200, datos, messageResponse["200"], false, res );
     console.log(usuario);
+    return responseService(200, datos, messageResponse["200"], false, res );
   } catch (error) {
     console.error('Error en el login:', error);
     res.status(500).json({
