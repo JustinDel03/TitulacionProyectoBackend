@@ -15,7 +15,7 @@ export async function Home(req: Request, res: Response) {
             countAlerts,
             countUsers
         ] = await Promise.all([
-            dbPool.query('SELECT * FROM tbv_observaciones'),
+            dbPool.query('SELECT * FROM tbv_last_observations'),
             dbPool.query('SELECT COUNT(id_observacion) AS total FROM observacion'),
             dbPool.query('SELECT COUNT(id_alerta) AS total FROM alertas'),
             dbPool.query('SELECT COUNT(id_usuario) AS total FROM usuarios WHERE id_rol = 2')

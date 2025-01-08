@@ -54,11 +54,20 @@ JOIN organizaciones d ON a.id_organizacion = d.id_organizacion
 JOIN estados_alerta e ON a.id_estado = e.id_estado_alerta;
 
 
-
-CREATE VIEW tbv_observaciones AS
-SELECT  o.id_observacion , e.nombre As nombre_especie, o.fecha_observacion, u.nombres AS usuario
+CREATE VIEW tbv_last_observations AS
+SELECT  o.id_observacion , e.nombre_comun, e.nombre_cientifico As nombre_especie, o.fecha_observacion, u.nombres AS usuario
 from observacion o
 join especies e on e.id_especie = o.id_especie
 join usuarios u on u.id_usuario = o.id_usuario
 order by o.fecha_observacion DESC
 limit 5
+
+
+CREATE VIEW tbv_tipo_alertas AS
+SELECT 
+	id_tipo_alerta,
+	tipo_alerta,
+	nivel_prioridad,
+	icono_alerta
+FROM 
+	tipos_alerta;

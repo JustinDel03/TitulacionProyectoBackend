@@ -121,9 +121,12 @@ function EliminarAlerta(req, res) {
 function tipos_alertas(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const result = yield db_1.dbPool.query('SELECT * FROM tbv_tipos_alertas');
-            const tipo_alertas = result.rows;
-            return (0, methods_helpers_1.responseService)(200, tipo_alertas, message_helpers_1.messageResponse["200"], false, res);
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_tipo_alertas');
+            // const tipo_alertas = result.rows;
+            const data = {
+                tipos_alertas: result.rows
+            };
+            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {
             console.error('Error:', err);
