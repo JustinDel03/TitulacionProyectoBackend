@@ -36,6 +36,9 @@ function CrearAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('Body recibido:', req.body.alerta);
         const alerta = JSON.parse(req.body.alerta);
+        const datos = JSON.parse((req.headers.datos));
+        alerta.id_usuario = datos.id_usuario;
+        //  console.log(alerta.id_usuario)
         // Validar que los campos requeridos estén presentes
         if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta || !alerta.descripcion) {
             return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
@@ -54,9 +57,11 @@ function CrearAlerta(req, res) {
             alerta.imagen_1 = imageUrls[0] || null;
             alerta.imagen_2 = imageUrls[1] || null;
             alerta.imagen_3 = imageUrls[2] || null;
+            alerta.id_estado = 1;
             // Llamar al procedimiento almacenado para guardar la alerta
-            const insertResult = yield db_1.dbPool.query('CALL insertar_alerta($1::JSON, $2)', [alerta, null]);
+            const insertResult = yield db_1.dbPool.query('CALL sp_crear_alerta($1::JSON, $2)', [alerta, null]);
             const id_alerta = insertResult.rows[0].new_id;
+            console.log(alerta);
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_alertas WHERE id_alerta = $1', [id_alerta]);
             if (result.rowCount === 0) {
                 return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
@@ -122,9 +127,11 @@ function tipos_alertas(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_tipo_alertas');
+            const sendero = yield db_1.dbPool.query('SELECT * FROM tbv_sendero');
             // const tipo_alertas = result.rows;
             const data = {
-                tipos_alertas: result.rows
+                tipos_alertas: result.rows,
+                senderos: sendero.rows
             };
             return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageResponse["200"], false, res);
         }

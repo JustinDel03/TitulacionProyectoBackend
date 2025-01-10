@@ -40,7 +40,7 @@ export async function IniciarSesion(req: Request, res: Response) {
     const result = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
 
     if (result.rowCount === 0) {
-      return responseService(400, null, messageResponse["400"], true, res);
+      return responseService(400, null, 'Usuario no Existe', true, res);
     }
 
     const usuario = result.rows[0];
@@ -91,7 +91,7 @@ export async function IniciarSesion(req: Request, res: Response) {
       email:  usuario.correo,
       phone: usuario.telefono,
       photo: usuario.imagen, 
-      token: usuario.session_token
+      token: sessionToken
     }
 
 
@@ -157,7 +157,7 @@ export async function CrearUsuario(req: Request, res: Response) {
 
     await dbPool.query(query, values);
 
-    return responseService(201, null, messageResponse["201"], false, res);
+    return responseService(200, null, messageResponse["201"], false, res);
 
   } catch (err) {
     console.error('Error al crear el usuario:', err);

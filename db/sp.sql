@@ -1,30 +1,3 @@
-CREATE OR REPLACE PROCEDURE insertar_alerta(IN data_alerta JSON)
-LANGUAGE plpgsql AS $$
-BEGIN
-    INSERT INTO alertas (
-        id_tipo_alerta,
-        id_usuario,
-        id_organizacion,
-        id_estado,
-        coordenada_longitud,
-        coordenada_latitud,
-        imagen,
-        descripcion,
-        fecha_creado
-    ) VALUES (
-        (data_alerta->>'idTipoAlerta')::BIGINT,
-        (data_alerta->>'idUsuario')::BIGINT,
-        (data_alerta->>'idOrganizacion')::BIGINT,
-        (data_alerta->>'idEstado')::BIGINT,
-        (data_alerta->>'coordenadaLongitud')::DECIMAL,
-        (data_alerta->>'coordenadaLatitud')::DECIMAL,
-        data_alerta->>'imagen',
-        data_alerta->>'descripcion',
-        NOW()
-    );
-END;
-$$;
-
 
 CREATE OR REPLACE PROCEDURE sp_crear_usuario(
     p_datos JSONB
@@ -109,3 +82,37 @@ BEGIN
     END IF;
 END;
 $$;
+CREATE OR REPLACE PROCEDURE public.sp_crear_alerta(
+	IN data_alerta json,
+	OUT new_id integer)
+LANGUAGE 'plpgsql'
+AS $BODY$
+BEGIN
+    INSERT INTO alertas (
+        id_tipo_alerta,
+        id_usuario,
+        id_sendero,
+        id_estado,
+        coordenada_longitud,
+        coordenada_latitud,
+        imagen_1,
+        imagen_2,
+        imagen_3,
+        descripcion,
+        fecha_creado
+    ) VALUES (
+        (data_alerta->>'id_tipo_alerta')::BIGINT,
+        (data_alerta->>'id_usuario')::BIGINT,
+        (data_alerta->>'id_sendero')::BIGINT,
+        (data_alerta->>'id_estado')::BIGINT,
+        (data_alerta->>'coordenada_longitud')::DECIMAL,
+        (data_alerta->>'coordenada_latitud')::DECIMAL,
+        data_alerta->>'imagen_1',
+        data_alerta->>'imagen_2',
+        data_alerta->>'imagen_3',
+        data_alerta->>'descripcion',
+        (ata_alerta->>'fecha_creado')::TIMESTAMP
+    )
+    RETURNING id_alerta INTO new_id;
+END;
+$$

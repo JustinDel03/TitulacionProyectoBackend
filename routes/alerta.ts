@@ -10,7 +10,7 @@ router.get('/tipo_alertas', tipos_alertas )
 
 //-------------------------------------- POST -------------------------------------//
 
-router.post('/CrearAlerta', upload.array('imagenes', 3), CrearAlerta);
+router.post('/CrearAlerta', validaTokenJwt, upload.array('imagenes', 3), CrearAlerta);
 
 
 export default router;

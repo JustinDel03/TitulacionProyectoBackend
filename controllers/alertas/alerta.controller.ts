@@ -4,6 +4,7 @@ import { dbPool } from '../../db';
 import { subirImagen  } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
 import { messageResponse } from '../../helpers/message.helpers';
+import { DatosJwt } from '../../models/jwt.interface';
 
 
 
@@ -27,7 +28,9 @@ export async function CrearAlerta(req: Request, res: Response) {
   console.log('Body recibido:', req.body.alerta);
 
   const alerta = JSON.parse(req.body.alerta);
-
+   const datos = JSON.parse((req.headers.datos) as string ) as DatosJwt;
+   alerta.id_usuario = datos.id_usuario;
+  //  console.log(alerta.id_usuario)
   // Validar que los campos requeridos estén presentes
   if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta || !alerta.descripcion) {
   
@@ -48,6 +51,7 @@ export async function CrearAlerta(req: Request, res: Response) {
     // Subir las imágenes a Firebase Storage y obtener las URLs firmadas
     const imageUrls: string[] = await Promise.all(
       req.files.map((file: Express.Multer.File) => 
+        
         subirImagen('alertas', file.originalname, file.buffer, file.mimetype)
       )
     );
@@ -57,11 +61,12 @@ export async function CrearAlerta(req: Request, res: Response) {
     alerta.imagen_2 = imageUrls[1] || null;
     alerta.imagen_3 = imageUrls[2] || null;
 
+    alerta.id_estado = 1
     // Llamar al procedimiento almacenado para guardar la alerta
-    const insertResult = await dbPool.query('CALL insertar_alerta($1::JSON, $2)', [alerta, null]);
+    const insertResult = await dbPool.query('CALL sp_crear_alerta($1::JSON, $2)', [alerta, null]);
 
     const id_alerta = insertResult.rows[0].new_id;
-
+    console.log(alerta);
     const result = await dbPool.query(
       'SELECT * FROM tbv_alertas WHERE id_alerta = $1',
       [id_alerta]
@@ -151,9 +156,12 @@ export async function EliminarAlerta(req: Request, res: Response) {
 export async function tipos_alertas(req: Request, res: Response) {
   try {
     const result = await dbPool.query('SELECT * FROM tbv_tipo_alertas');
+    const sendero =  await dbPool.query('SELECT * FROM tbv_sendero');
     // const tipo_alertas = result.rows;
     const data = {
-      tipos_alertas : result.rows
+      tipos_alertas : result.rows,
+      senderos: sendero.rows
+
     }
     return responseService(200, data, messageResponse["200"], false, res );
 

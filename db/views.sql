@@ -38,7 +38,6 @@ SELECT
 	b.nivel_prioridad,
 	b.icono_alerta,
 	(c.nombres ||' '|| c. apellidos) AS usuario,
-	d.nombre_organizacion,
 	e.nombre_estado,
 	a.coordenada_longitud,
 	a.coordenada_latitud,
@@ -50,7 +49,6 @@ FROM
 	alertas a
 JOIN tipos_alerta b ON a.id_tipo_alerta = b.id_tipo_alerta
 JOIN usuarios c ON a.id_usuario = c.id_usuario
-JOIN organizaciones d ON a.id_organizacion = d.id_organizacion
 JOIN estados_alerta e ON a.id_estado = e.id_estado_alerta;
 
 
@@ -71,3 +69,12 @@ SELECT
 	icono_alerta
 FROM 
 	tipos_alerta;
+
+
+CREATE VIEW tbv_sendero AS
+SELECT 
+	id_sendero,
+	id_organización,
+	nombre_sendero
+FROM 
+	senderos;

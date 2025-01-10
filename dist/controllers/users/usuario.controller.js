@@ -55,7 +55,7 @@ function IniciarSesion(req, res) {
         try {
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
             if (result.rowCount === 0) {
-                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
+                return (0, methods_helpers_1.responseService)(400, null, 'Usuario no Existe', true, res);
             }
             const usuario = result.rows[0];
             const isPassword_valid = yield bcrypt_1.default.compare(password, usuario.password);
@@ -89,7 +89,7 @@ function IniciarSesion(req, res) {
                 email: usuario.correo,
                 phone: usuario.telefono,
                 photo: usuario.imagen,
-                token: usuario.session_token
+                token: sessionToken
             };
             console.log(usuario);
             return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageResponse["200"], false, res);
@@ -133,7 +133,7 @@ function CrearUsuario(req, res) {
             const query = `CALL sp_crear_usuario($1);`;
             const values = [JSON.stringify(data)];
             yield db_1.dbPool.query(query, values);
-            return (0, methods_helpers_1.responseService)(201, null, message_helpers_1.messageResponse["201"], false, res);
+            return (0, methods_helpers_1.responseService)(200, null, message_helpers_1.messageResponse["201"], false, res);
         }
         catch (err) {
             console.error('Error al crear el usuario:', err);

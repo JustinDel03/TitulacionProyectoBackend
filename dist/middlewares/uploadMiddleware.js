@@ -9,6 +9,7 @@ const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({
     storage,
     fileFilter: (req, file, cb) => {
+        console.log(file.mimetype, 'hola');
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
         }
