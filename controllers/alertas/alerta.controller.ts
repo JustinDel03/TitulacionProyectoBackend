@@ -1,10 +1,8 @@
 import { Request, Response } from 'express';
 import { dbPool } from '../../db';
-
 import { subirImagen  } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
 import { messageRespone } from '../../helpers/message.helpers';
-
 
 
 
@@ -24,7 +22,6 @@ export async function ListaAlertas(req: Request, res: Response) {
 }
 
 export async function CrearAlerta(req: Request, res: Response) {
-  console.log('Body recibido:', req.body.alerta);
 
   const alerta = JSON.parse(req.body.alerta);
 
@@ -57,7 +54,7 @@ export async function CrearAlerta(req: Request, res: Response) {
     alerta.imagen_3 = imageUrls[2] || null;
 
     // Llamar al procedimiento almacenado para guardar la alerta
-    const insertResult = await dbPool.query('CALL insertar_alerta($1::JSON, $2)', [alerta, null]);
+    const insertResult = await dbPool.query('CALL sp_crear_alerta($1::JSON, $2)', [alerta, null]);
 
     const id_alerta = insertResult.rows[0].new_id;
 
@@ -89,15 +86,15 @@ export async function CrearAlerta(req: Request, res: Response) {
 
 export async function CambiarEstadoAlerta(req: Request, res: Response) {
   try {
-    const { id_alerta, nuevo_estado } = req.body;
-    if (!id_alerta || !nuevo_estado) {
+    const { id_alerta, id_estado } = req.body;
+    if (!id_alerta || !id_estado) {
       return responseService(400, null, messageRespone["400"], true, res);
 
     }
 
     const result = await dbPool.query(
-      'UPDATE tbv_alertas SET estado = $1 WHERE id_alerta = $2 RETURNING *',
-      [nuevo_estado, id_alerta]
+      'UPDATE alertas SET id_estado = $1 WHERE id_alerta = $2 RETURNING *',
+      [id_estado, id_alerta]
     );
 
     if (result.rowCount === 0) {
@@ -126,7 +123,7 @@ export async function EliminarAlerta(req: Request, res: Response) {
     }
 
     const result = await dbPool.query(
-      'DELETE FROM tbv_alertas WHERE id_alerta = $1 RETURNING *',
+      'DELETE FROM alertas WHERE id_alerta = $1 RETURNING *',
       [id_alerta]
     );
 

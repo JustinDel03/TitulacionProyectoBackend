@@ -79,12 +79,27 @@ CREATE TABLE usuarios (
     fecha_modificado TIMESTAMP
 );
 
+DROP TABLE IF EXISTS senderos
+CREATE TABLE senderos (
+    id_sendero BIGSERIAL PRIMARY KEY,
+    id_organizacion BIGINT NOT NULL REFERENCES organizaciones(id_organizacion),
+    nombre_sendero VARCHAR(255) NOT NULL,
+    distancia_km DECIMAL(5,2),
+    tiempo_sendero INTERVAL,
+    dificultad VARCHAR(15),
+    guia BOOLEAN,
+    fecha_creado TIMESTAMP DEFAULT NOW(),
+    fecha_modificado TIMESTAMP
+);
+
+
+
 DROP TABLE IF EXISTS alertas;
 CREATE TABLE alertas (
     id_alerta BIGSERIAL PRIMARY KEY,
     id_tipo_alerta BIGINT NOT NULL REFERENCES tipos_alerta(id_tipo_alerta),
     id_usuario BIGINT NOT NULL REFERENCES usuarios(id_usuario),
-    id_organizacion BIGINT REFERENCES organizaciones(id_organizacion),
+    id_sendero BIGINT REFERENCES senderos(id_sendero),
     id_estado BIGINT REFERENCES estados_alerta(id_estado_alerta),
     coordenada_longitud DECIMAL(9,6),
     coordenada_latitud DECIMAL(9,6),
@@ -129,11 +144,10 @@ CREATE TABLE menu_roles (
 );
 
 
-DROP TABLE IF EXISTS familias_especies;
-CREATE TABLE familias_especies (
-    id_familia_especie BIGSERIAL PRIMARY KEY,
-    nombre_cientifico VARCHAR(255) NOT NULL,
-    descripcion TEXT,
+DROP TABLE IF EXISTS categorias_especies;
+CREATE TABLE categorias_especies (
+    id_categoria_especie BIGSERIAL PRIMARY KEY,
+    nombre_categoria VARCHAR(255) NOT NULL,
     fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -142,43 +156,30 @@ CREATE TABLE familias_especies (
 DROP TABLE IF EXISTS especies;
 CREATE TABLE especies (
     id_especie BIGSERIAL PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    categoría VARCHAR(50) NOT NULL,
-    id_familia_especie BIGINT NOT NULL REFERENCES familias_especies(id_familia_especie),
+    nombre_comun VARCHAR(255) NOT NULL,
+    nombre_cientifico VARCHAR(255) NOT NULL,
+    id_categoria_especie BIGINT NOT NULL REFERENCES categorias_especies(id_categoria_especie),
     imagen TEXT,
     fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-DROP TABLE IF EXISTS observacion;
-CREATE TABLE observacion (
+
+DROP TABLE IF EXISTS observaciones;
+CREATE TABLE observaciones (
     id_observacion BIGSERIAL PRIMARY KEY,
     id_especie BIGINT NOT NULL REFERENCES especies(id_especie),
-    descripción TEXT,
+    id_usuario BIGINT NOT NULL REFERENCES usuarios(id_usuario),
+    id_sendero BIGINT NOT NULL REFERENCES senderos(id_sendero),
+    descripcion TEXT,
     fecha_observacion TIMESTAMP NOT NULL,
     coordenada_longitud DECIMAL(9,6),
     coordenada_latitud DECIMAL(9,6),
     estado BOOLEAN,
+    imagen_1 TEXT,
+	imagen_2 TEXT,
+    imagen_3 TEXT,
     fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
-
-DROP TABLE IF EXISTS senderos;
-CREATE TABLE senderos (
-    id_sendero BIGSERIAL PRIMARY KEY,
-    nombre_sendero TEXT,
-    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
-    fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
-INSERT INTO senderos (
-	nombre_sendero
-)
-VALUES(
-	'nombre_sendero',
-	'Sendero Buena Vista',
-	'Sendero Higuerón',
-	'Sendero Canoa'
-);
-
 
