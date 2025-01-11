@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EliminarAlerta = exports.CambiarEstadoAlerta = exports.CrearAlerta = exports.ListaAlertas = void 0;
-
 const db_1 = require("../../db");
 const firebase_helpers_1 = require("../../helpers/firebase.helpers");
 const methods_helpers_1 = require("../../helpers/methods.helpers");
@@ -29,9 +28,9 @@ function ListaAlertas(req, res) {
         }
     });
 }
+exports.ListaAlertas = ListaAlertas;
 function CrearAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log('Body recibido:', req.body.alerta);
         const alerta = JSON.parse(req.body.alerta);
         // Validar que los campos requeridos estén presentes
         if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta || !alerta.descripcion) {
@@ -39,10 +38,7 @@ function CrearAlerta(req, res) {
         }
         // Validar que se haya enviado un archivo
         if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-            return res.status(400).json({
-                error: true,
-                message: 'No se ha proporcionado ninguna imagen',
-            });
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
         }
         try {
             // Subir las imágenes a Firebase Storage y obtener las URLs firmadas
@@ -52,7 +48,7 @@ function CrearAlerta(req, res) {
             alerta.imagen_2 = imageUrls[1] || null;
             alerta.imagen_3 = imageUrls[2] || null;
             // Llamar al procedimiento almacenado para guardar la alerta
-            const insertResult = yield db_1.dbPool.query('CALL insertar_alerta($1::JSON, $2)', [alerta, null]);
+            const insertResult = yield db_1.dbPool.query('CALL sp_crear_alerta($1::JSON, $2)', [alerta, null]);
             const id_alerta = insertResult.rows[0].new_id;
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_alertas WHERE id_alerta = $1', [id_alerta]);
             if (result.rowCount === 0) {
@@ -74,11 +70,11 @@ exports.CrearAlerta = CrearAlerta;
 function CambiarEstadoAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { id_alerta, nuevo_estado } = req.body;
-            if (!id_alerta || !nuevo_estado) {
+            const { id_alerta, id_estado } = req.body;
+            if (!id_alerta || !id_estado) {
                 return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
             }
-            const result = yield db_1.dbPool.query('UPDATE tbv_alertas SET estado = $1 WHERE id_alerta = $2 RETURNING *', [nuevo_estado, id_alerta]);
+            const result = yield db_1.dbPool.query('UPDATE alertas SET id_estado = $1 WHERE id_alerta = $2 RETURNING *', [id_estado, id_alerta]);
             if (result.rowCount === 0) {
                 return (0, methods_helpers_1.responseService)(404, null, message_helpers_1.messageRespone["404"], true, res);
             }
@@ -86,7 +82,7 @@ function CambiarEstadoAlerta(req, res) {
             // 📢 Emitimos la actualización de estado a los clientes conectados
             const io = req.app.get("socketio");
             io.emit("actualizarAlerta", alertaActualizada);
-            return (0, methods_helpers_1.responseService)(200, alertaActualizada, "Estado de alerta actualizado", false, res);
+            return (0, methods_helpers_1.responseService)(200, alertaActualizada, message_helpers_1.messageRespone["200"], false, res);
         }
         catch (error) {
             console.error("Error al cambiar el estado de la alerta:", error);
@@ -102,7 +98,7 @@ function EliminarAlerta(req, res) {
             if (!id_alerta) {
                 return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
             }
-            const result = yield db_1.dbPool.query('DELETE FROM tbv_alertas WHERE id_alerta = $1 RETURNING *', [id_alerta]);
+            const result = yield db_1.dbPool.query('DELETE FROM alertas WHERE id_alerta = $1 RETURNING *', [id_alerta]);
             if (result.rowCount === 0) {
                 return (0, methods_helpers_1.responseService)(404, null, message_helpers_1.messageRespone["404"], true, res);
             }
@@ -118,4 +114,3 @@ function EliminarAlerta(req, res) {
     });
 }
 exports.EliminarAlerta = EliminarAlerta;
-

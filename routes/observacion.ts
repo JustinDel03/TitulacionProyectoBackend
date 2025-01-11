@@ -1,25 +1,21 @@
 import { Router } from 'express';
-import { ListaAlertas, CrearAlerta, EliminarAlerta, CambiarEstadoAlerta  } from '../controllers/alertas/alerta.controller';
+import { ListaObservaciones, CrearObservacion, EliminarObservacion, CambiarEstadoObservacion  } from '../controllers/observaciones/observacion.controller';
 import { upload } from '../middlewares/uploadMiddleware';
 import { validaTokenJwt } from '../middlewares/jwt';
 const router: Router = Router();
 
 //-------------------------------------- GET -------------------------------------//
-router.get('/ListaAlertas', validaTokenJwt, ListaAlertas);
+router.get('/ListaObservaciones', validaTokenJwt, ListaObservaciones);
 
 //-------------------------------------- POST -------------------------------------//
-router.post('/CrearAlerta', upload.array('imagenes', 3), CrearAlerta);
-
+router.post('/CrearObservacion', upload.array('imagenes', 3), CrearObservacion);
 
 //-------------------------------------- DELETE ----------------------------------//
 
-router.delete('/EliminarAlerta/:id_alerta',validaTokenJwt, EliminarAlerta);
-
+router.delete('/EliminarObservacion/:id_observacion',validaTokenJwt, EliminarObservacion);
 
 //-------------------------------------- PUT -------------------------------------//
-router.put('/CambiarEstadoAlerta/:id_alerta/:id_estado', validaTokenJwt, CambiarEstadoAlerta);
-
-
+router.put('/CambiarEstadoObservacion/:id_observacion/:estado', validaTokenJwt, CambiarEstadoObservacion);
 
 
 export default router;

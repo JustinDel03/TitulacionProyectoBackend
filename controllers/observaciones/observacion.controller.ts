@@ -5,15 +5,13 @@ import { responseService } from '../../helpers/methods.helpers';
 import { messageRespone } from '../../helpers/message.helpers';
 
 
-
-
-export async function ListaAlertas(req: Request, res: Response) {
+export async function ListaObservaciones(req: Request, res: Response) {
   try {
     // Consulta las alertas desde la base de datos
-    const result = await dbPool.query('SELECT * FROM tbv_alertas');
-    const alertas = result.rows;
+    const result = await dbPool.query('SELECT * FROM tbv_observaciones');
+    const observaciones = result.rows;
 
-    return responseService(200, alertas, messageRespone["200"], false, res );
+    return responseService(200, observaciones, messageRespone["200"], false, res );
 
   } catch (err) {
     console.error('Error:', err);
@@ -21,93 +19,87 @@ export async function ListaAlertas(req: Request, res: Response) {
   }
 }
 
-export async function CrearAlerta(req: Request, res: Response) {
+export async function CrearObservacion(req: Request, res: Response) {
 
-  const alerta = JSON.parse(req.body.alerta);
+  const observacion = JSON.parse(req.body.observacion);
 
   // Validar que los campos requeridos estén presentes
-  if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta || !alerta.descripcion) {
-  
+  if (!observacion || !observacion.id_especie || !observacion.descripcion || !observacion.coordenada_longitud || !observacion.coordenada_latitud || !observacion.estado) {
     return responseService(400, null, messageRespone["400"], true, res);
-    
   }
 
   // Validar que se haya enviado un archivo
   if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-
     return responseService(400, null, messageRespone["400"], true, res);
-  
   }
-
 
   try {
     // Subir las imágenes a Firebase Storage y obtener las URLs firmadas
     const imageUrls: string[] = await Promise.all(
       req.files.map((file: Express.Multer.File) => 
-        subirImagen('alertas', file.originalname, file.buffer, file.mimetype)
+        subirImagen('observaciones', file.originalname, file.buffer, file.mimetype)
       )
     );
 
     // Agregar las URLs de las imágenes directamente al objeto alerta
-    alerta.imagen_1 = imageUrls[0] || null;
-    alerta.imagen_2 = imageUrls[1] || null;
-    alerta.imagen_3 = imageUrls[2] || null;
+    observacion.imagen_1 = imageUrls[0] || null;
+    observacion.imagen_2 = imageUrls[1] || null;
+    observacion.imagen_3 = imageUrls[2] || null;
 
     // Llamar al procedimiento almacenado para guardar la alerta
-    const insertResult = await dbPool.query('CALL sp_crear_alerta($1::JSON, $2)', [alerta, null]);
-
-    const id_alerta = insertResult.rows[0].new_id;
+    const insertResult = await dbPool.query('CALL sp_crear_observacion($1::JSON, $2)', [observacion, null]);
+    const id_observacion = insertResult.rows[0].new_id;
 
     const result = await dbPool.query(
-      'SELECT * FROM tbv_alertas WHERE id_alerta = $1',
-      [id_alerta]
+      'SELECT * FROM tbv_observaciones WHERE id_observacion = $1',
+      [id_observacion]
     );
 
     if (result.rowCount === 0) {
       return responseService(500, null, messageRespone["500"], true, res);
     }
 
-    const alertaCompleta = result.rows[0];
+    const observacionActualizada = result.rows[0];
 
 
     // 📢 Emitimos la nueva alerta a todos los clientes conectados
     const io = req.app.get("socketio");
-    io.emit("actualizarAlerta", alertaCompleta);
+    io.emit("actualizarAlerta", observacionActualizada);
 
     return responseService(201, null, messageRespone["201"], false, res);
 
    
   } catch (err) {
-    console.error('Error al crear la alerta:', err);
+    console.error('Error al crear la observacion:', err);
     responseService(500, null, messageRespone["500"], true, res);
   }
 }
 
 
-export async function CambiarEstadoAlerta(req: Request, res: Response) {
+export async function CambiarEstadoObservacion(req: Request, res: Response) {
   try {
-    const { id_alerta, id_estado } = req.body;
-    if (!id_alerta || !id_estado) {
+    const { id_observacion, estado } = req.body;
+    if (!id_observacion || !estado) {
       return responseService(400, null, messageRespone["400"], true, res);
 
     }
 
     const result = await dbPool.query(
-      'UPDATE alertas SET id_estado = $1 WHERE id_alerta = $2 RETURNING *',
-      [id_estado, id_alerta]
+      'UPDATE observaciones SET estado = $1 WHERE id_observacion = $2 RETURNING *',
+      [estado, id_observacion]
     );
 
     if (result.rowCount === 0) {
       return responseService(404, null, messageRespone["404"], true, res);
     }
 
-    const alertaActualizada = result.rows[0];
+    const observacionActualizada = result.rows[0];
 
     // 📢 Emitimos la actualización de estado a los clientes conectados
     const io = req.app.get("socketio");
-    io.emit("actualizarAlerta", alertaActualizada);
+    io.emit("actualizarAlerta", observacionActualizada);
 
-    return responseService(200, alertaActualizada,messageRespone["200"], false, res);
+    return responseService(200, observacionActualizada,messageRespone["200"], false, res);
 
   } catch (error) {
     console.error("Error al cambiar el estado de la alerta:", error);
@@ -115,16 +107,16 @@ export async function CambiarEstadoAlerta(req: Request, res: Response) {
   }
 }
 
-export async function EliminarAlerta(req: Request, res: Response) {
+export async function EliminarObservacion(req: Request, res: Response) {
   try {
-    const { id_alerta } = req.params;
-    if (!id_alerta) {
+    const { id_observacion } = req.params;
+    if (!id_observacion) {
       return responseService(400, null, messageRespone["400"], true, res);
     }
 
     const result = await dbPool.query(
-      'DELETE FROM alertas WHERE id_alerta = $1 RETURNING *',
-      [id_alerta]
+      'DELETE FROM observaciones WHERE id_observacion = $1 RETURNING *',
+      [id_observacion]
     );
 
     if (result.rowCount === 0) {
@@ -133,7 +125,7 @@ export async function EliminarAlerta(req: Request, res: Response) {
 
     // 📢 Emitimos evento de eliminación a todos los clientes conectados
     const io = req.app.get("socketio");
-    io.emit("actualizarAlerta", { id_alerta, eliminada: true });
+    io.emit("actualizarAlerta", { id_observacion, eliminada: true });
 
     return responseService(200, null, messageRespone["200"], false, res);
 
