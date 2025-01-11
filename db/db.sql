@@ -291,7 +291,7 @@ CREATE TABLE alertas (
     imagen_2 TEXT,
     imagen_3 TEXT,
     descripcion TEXT,
-    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW()
+    fecha_creado TIME NOT NULL DEFAULT NOW()
 );
 
 -- 11. Categorías de especies

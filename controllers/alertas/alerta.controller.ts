@@ -14,9 +14,13 @@ export async function ListaAlertas(req: Request, res: Response) {
   try {
     // Consulta las alertas desde la base de datos
     const result = await dbPool.query('SELECT * FROM tbv_alertas');
-    const alertas = result.rows;
+    const data ={
 
-    return responseService(200, alertas, messageResponse["200"], false, res );
+      alertas: result.rows
+
+    } 
+
+    return responseService(200, data , messageResponse["200"], false, res );
 
   } catch (err) {
     console.error('Error:', err);
@@ -83,7 +87,7 @@ export async function CrearAlerta(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", alertaCompleta);
 
-    return responseService(201, null, messageResponse["201"], false, res);
+    return responseService(200, null, messageResponse["201"], false, res);
 
    
   } catch (err) {

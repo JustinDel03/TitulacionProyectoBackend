@@ -41,7 +41,9 @@ SELECT
 	e.nombre_estado,
 	a.coordenada_longitud,
 	a.coordenada_latitud,
-	a.imagen,
+	a.imagen_1,
+	a.imagen_2,
+	a.imagen_3,
 	a.descripcion,
 	a.fecha_creado
 

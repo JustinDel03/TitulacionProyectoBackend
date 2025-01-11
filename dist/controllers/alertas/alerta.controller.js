@@ -23,8 +23,10 @@ function ListaAlertas(req, res) {
         try {
             // Consulta las alertas desde la base de datos
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_alertas');
-            const alertas = result.rows;
-            return (0, methods_helpers_1.responseService)(200, alertas, message_helpers_1.messageResponse["200"], false, res);
+            const data = {
+                alertas: result.rows
+            };
+            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {
             console.error('Error:', err);
@@ -70,7 +72,7 @@ function CrearAlerta(req, res) {
             // 📢 Emitimos la nueva alerta a todos los clientes conectados
             const io = req.app.get("socketio");
             io.emit("actualizarAlerta", alertaCompleta);
-            return (0, methods_helpers_1.responseService)(201, null, message_helpers_1.messageResponse["201"], false, res);
+            return (0, methods_helpers_1.responseService)(200, null, message_helpers_1.messageResponse["201"], false, res);
         }
         catch (err) {
             console.error('Error al crear la alerta:', err);

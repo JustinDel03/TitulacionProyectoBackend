@@ -86,7 +86,7 @@ CREATE OR REPLACE PROCEDURE public.sp_crear_alerta(
 	IN data_alerta json,
 	OUT new_id integer)
 LANGUAGE 'plpgsql'
-AS $BODY$
+AS $$
 BEGIN
     INSERT INTO alertas (
         id_tipo_alerta,
@@ -111,8 +111,47 @@ BEGIN
         data_alerta->>'imagen_2',
         data_alerta->>'imagen_3',
         data_alerta->>'descripcion',
-        (ata_alerta->>'fecha_creado')::TIMESTAMP
+        (data_alerta->>'fecha_creado')::TIMESTAMP
     )
     RETURNING id_alerta INTO new_id;
 END;
 $$
+
+
+
+CREATE OR REPLACE PROCEDURE sp_buscar_observaciones(
+    IN busqueda TEXT,
+    OUT resultado JSON
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Consulta para buscar coincidencias en nombre_comun o nombre_cientifico
+    SELECT json_agg(t)
+    INTO resultado
+    FROM (
+        SELECT 
+            o.id_observacion,
+            o.estado,
+            e.nombre_comun,
+            e.nombre_cientifico,
+            o.nombre_sendero,
+            (u.nombres || ' ' || u.apellidos) AS usuario,
+            o.fecha_observacion,
+            o.coordenada_longitud,
+            o.coodernada_latitud,
+            o.descripcion
+        FROM observacion o
+        JOIN especies e ON o.id_especie = e.id_especie
+        JOIN usuarios u ON o.id_usuario = u.id_usuario
+        WHERE 
+            e.nombre_comun ILIKE '%' || busqueda || '%' 
+            OR e.nombre_cientifico ILIKE '%' || busqueda || '%'
+    ) t;
+
+    -- Si no hay resultados, retornar un mensaje vacío
+    IF resultado IS NULL THEN
+        resultado := '[]'::JSON;
+    END IF;
+END;
+$$;
