@@ -84,8 +84,8 @@ JOIN senderos d ON a.id_sendero = d.id_sendero
 JOIN categorias_especies e ON b.id_categoria_especie = e.id_categoria_especie 
 
 CREATE VIEW tbv_last_observations AS
-SELECT  o.id_observacion , e.nombre_comun, e.nombre_cientifico As nombre_especie, o.fecha_observacion, u.nombres AS usuario
-from observacion o
+SELECT  o.id_observacion , e.nombre_comun, e.nombre_cientifico As nombre_especie, o.fecha_observacion, u.nombres AS usuario, o.imagen_1
+from observaciones o
 join especies e on e.id_especie = o.id_especie
 join usuarios u on u.id_usuario = o.id_usuario
 order by o.fecha_observacion DESC

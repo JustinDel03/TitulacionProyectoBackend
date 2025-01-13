@@ -5,7 +5,7 @@ import { validaTokenJwt } from '../middlewares/jwt';
 const router: Router = Router();
 
 //-------------------------------------- GET -------------------------------------//
-router.get('/ListaAlertas', validaTokenJwt, ListaAlertas);
+router.get('/ListaAlertas',validaTokenJwt , ListaAlertas);
 router.get('/tipo_alertas', tipos_alertas )
 
 //-------------------------------------- POST -------------------------------------//

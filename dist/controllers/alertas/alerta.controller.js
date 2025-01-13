@@ -21,8 +21,9 @@ const message_helpers_1 = require("../../helpers/message.helpers");
 function ListaAlertas(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            const { id_usuario, id_estado } = req.query;
             // Consulta las alertas desde la base de datos
-            const result = yield db_1.dbPool.query('SELECT * FROM tbv_alertas');
+            const result = yield db_1.dbPool.query('SELECT * FROM buscar_alertas($1, $2)', [id_usuario || null, id_estado || null]);
             const data = {
                 alertas: result.rows
             };
@@ -34,7 +35,6 @@ function ListaAlertas(req, res) {
         }
     });
 }
-exports.ListaAlertas = ListaAlertas;
 function CrearAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const alerta = JSON.parse(req.body.alerta);
@@ -47,7 +47,7 @@ function CrearAlerta(req, res) {
         }
         // Validar que se haya enviado un archivo
         if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         try {
             // Subir las imágenes a Firebase Storage y obtener las URLs firmadas
@@ -80,11 +80,11 @@ function CrearAlerta(req, res) {
 function CambiarEstadoAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { id_alerta, id_estado } = req.body;
-            if (!id_alerta || !id_estado) {
-                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            const { id_alerta, nuevo_estado, } = req.body;
+            if (!id_alerta || !nuevo_estado) {
+                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
             }
-            const result = yield db_1.dbPool.query('UPDATE alertas SET id_estado = $1 WHERE id_alerta = $2 RETURNING *', [id_estado, id_alerta]);
+            const result = yield db_1.dbPool.query('UPDATE alertas SET id_estado = $1 WHERE id_alerta = $2 RETURNING *', [nuevo_estado, id_alerta]);
             if (result.rowCount === 0) {
                 return (0, methods_helpers_1.responseService)(404, null, message_helpers_1.messageResponse["404"], true, res);
             }
@@ -92,7 +92,7 @@ function CambiarEstadoAlerta(req, res) {
             // 📢 Emitimos la actualización de estado a los clientes conectados
             const io = req.app.get("socketio");
             io.emit("actualizarAlerta", alertaActualizada);
-            return (0, methods_helpers_1.responseService)(200, alertaActualizada, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, alertaActualizada, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (error) {
             console.error("Error al cambiar el estado de la alerta:", error);
@@ -140,4 +140,3 @@ function tipos_alertas(req, res) {
         }
     });
 }
-exports.EliminarAlerta = EliminarAlerta;

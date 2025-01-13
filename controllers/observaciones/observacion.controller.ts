@@ -2,35 +2,46 @@ import { Request, Response } from 'express';
 import { dbPool } from '../../db';
 import { subirImagen  } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
-import { messageRespone } from '../../helpers/message.helpers';
+import { messageResponse } from '../../helpers/message.helpers';
+import { DatosJwt } from '../../models/jwt.interface';
 
 
 export async function ListaObservaciones(req: Request, res: Response) {
   try {
-    // Consulta las alertas desde la base de datos
-    const result = await dbPool.query('SELECT * FROM tbv_observaciones');
-    const observaciones = result.rows;
 
-    return responseService(200, observaciones, messageRespone["200"], false, res );
+    const {estado, id_usuario} = req.query;
+
+    const estadoBoolean = estado !== undefined ? estado === 'true' : null;
+
+    console.log(typeof(estadoBoolean));
+    // Consulta las alertas desde la base de datos
+    const result = await dbPool.query('SELECT * FROM buscar_observaciones_estado($1,$2)', [estadoBoolean, id_usuario || null]);
+    const observaciones = result.rows;
+    const data = {
+      observaciones : observaciones
+    }
+    return responseService(200, data, messageResponse["200"], false, res );
 
   } catch (err) {
     console.error('Error:', err);
-    responseService(500,null, messageRespone["500"], false, res)
+    responseService(500,null, messageResponse["500"], false, res)
   }
 }
 
 export async function CrearObservacion(req: Request, res: Response) {
 
   const observacion = JSON.parse(req.body.observacion);
-
+  const datos = JSON.parse((req.headers.datos) as string ) as DatosJwt;
+  observacion.id_usuario = datos.id_usuario;
+  console.log('body: ', observacion);
   // Validar que los campos requeridos estén presentes
   if (!observacion || !observacion.id_especie || !observacion.descripcion || !observacion.coordenada_longitud || !observacion.coordenada_latitud || !observacion.estado) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   // Validar que se haya enviado un archivo
   if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   }
 
   try {
@@ -56,7 +67,7 @@ export async function CrearObservacion(req: Request, res: Response) {
     );
 
     if (result.rowCount === 0) {
-      return responseService(500, null, messageRespone["500"], true, res);
+      return responseService(500, null, messageResponse["500"], true, res);
     }
 
     const observacionActualizada = result.rows[0];
@@ -66,12 +77,12 @@ export async function CrearObservacion(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", observacionActualizada);
 
-    return responseService(201, null, messageRespone["201"], false, res);
+    return responseService(201, null, messageResponse["201"], false, res);
 
    
   } catch (err) {
     console.error('Error al crear la observacion:', err);
-    responseService(500, null, messageRespone["500"], true, res);
+    responseService(500, null, messageResponse["500"], true, res);
   }
 }
 
@@ -80,7 +91,7 @@ export async function CambiarEstadoObservacion(req: Request, res: Response) {
   try {
     const { id_observacion, estado } = req.body;
     if (!id_observacion || !estado) {
-      return responseService(400, null, messageRespone["400"], true, res);
+      return responseService(400, null, messageResponse["400"], true, res);
 
     }
 
@@ -90,7 +101,7 @@ export async function CambiarEstadoObservacion(req: Request, res: Response) {
     );
 
     if (result.rowCount === 0) {
-      return responseService(404, null, messageRespone["404"], true, res);
+      return responseService(404, null, messageResponse["404"], true, res);
     }
 
     const observacionActualizada = result.rows[0];
@@ -99,11 +110,11 @@ export async function CambiarEstadoObservacion(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", observacionActualizada);
 
-    return responseService(200, observacionActualizada,messageRespone["200"], false, res);
+    return responseService(200, observacionActualizada,messageResponse["200"], false, res);
 
   } catch (error) {
     console.error("Error al cambiar el estado de la alerta:", error);
-    responseService(500, null, messageRespone["500"], true, res);
+    responseService(500, null, messageResponse["500"], true, res);
   }
 }
 
@@ -111,7 +122,7 @@ export async function EliminarObservacion(req: Request, res: Response) {
   try {
     const { id_observacion } = req.params;
     if (!id_observacion) {
-      return responseService(400, null, messageRespone["400"], true, res);
+      return responseService(400, null, messageResponse["400"], true, res);
     }
 
     const result = await dbPool.query(
@@ -120,17 +131,17 @@ export async function EliminarObservacion(req: Request, res: Response) {
     );
 
     if (result.rowCount === 0) {
-      return responseService(404, null, messageRespone["404"], true, res);
+      return responseService(404, null, messageResponse["404"], true, res);
     }
 
     // 📢 Emitimos evento de eliminación a todos los clientes conectados
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", { id_observacion, eliminada: true });
 
-    return responseService(200, null, messageRespone["200"], false, res);
+    return responseService(200, null, messageResponse["200"], false, res);
 
   } catch (error) {
     console.error("Error al eliminar la alerta:", error);
-    responseService(500, null, messageRespone["500"], true, res);
+    responseService(500, null, messageResponse["500"], true, res);
   }
 }

@@ -127,3 +127,70 @@ nombre_estado
 INSERT INTO estados_alerta(
 nombre_estado
 )VALUES('CERRADA');
+
+
+
+INSERT INTO categorias_especies(nombre_categoria) 
+VALUES 
+('Mamíferos'),
+('Aves'),
+('Reptiles'),
+('Anfibios'),
+('Insectos')
+;
+
+
+INSERT INTO especies (nombre_comun, nombre_cientifico, id_categoria_especies, imagen)
+VALUES 
+-- Mamíferos
+('Jaguar', 'Panthera onca', 1, ''),
+('Mono aullador', 'Alouatta palliata', 1, ''),
+('Mono capuchino', 'Cebus capucinus', 1, ''),
+('Saíno', 'Pecari tajacu', 1, ''),
+('Venado cola blanca', 'Odocoileus virginianus', 1, ''),
+('Oso hormiguero gigante', 'Myrmecophaga tridactyla', 1, ''),
+('Armadillo de nueve bandas', 'Dasypus novemcinctus', 1, ''),
+('Zorro cangrejero', 'Cerdocyon thous', 1, ''),
+('Tigrillo', 'Leopardus pardalis', 1, ''),
+('Murciélago frugívoro', 'Artibeus jamaicensis', 1, ''),
+('Murciélago nectarívoro', 'Glossophaga soricina', 1, ''),
+
+-- Aves
+('Papagayo de Guayaquil', 'Ara ambiguus guayaquilensis', 2, ''),
+('Gavilán dorsigrís', 'Leucopternis occidentalis', 2, ''),
+('Jilguero azafranado', 'Carduelis siemiradzkii', 2, ''),
+('Perico de El Oro', 'Pyrrhura orcesi', 2, ''),
+('Loro cabeciazul', 'Pionus menstruus', 2, ''),
+('Colibrí amazilia', 'Amazilia amazilia', 2, ''),
+('Búho de anteojos', 'Pulsatrix perspicillata', 2, ''),
+('Tucán del Chocó', 'Ramphastos brevis', 2, ''),
+('Pájaro carpintero de Guayaquil', 'Campephilus gayaquilensis', 2, ''),
+('Tangara azuleja', 'Thraupis episcopus', 2, ''),
+
+-- Reptiles
+('Iguana verde', 'Iguana iguana', 3, ''),
+('Boa esmeralda', 'Corallus batesii', 3, ''),
+('Lagartija de lava', 'Microlophus occipitalis', 3, ''),
+('Caimán de anteojos', 'Caiman crocodilus', 3, ''),
+('Tortuga mordedora', 'Chelydra acutirostris', 3, ''),
+('Serpiente coral falsa', 'Lampropeltis triangulum', 3, ''),
+('Gecko casero tropical', 'Hemidactylus mabouia', 3, ''),
+('Anolis de cabeza azul', 'Anolis gemmosus', 3, ''),
+
+-- Anfibios
+('Rana de cristal reticulada', 'Hyalinobatrachium fleischmanni', 4, ''),
+('Sapo espinoso', 'Rhinella horribilis', 4, ''),
+('Rana marsupial andina', 'Gastrotheca riobambae', 4, ''),
+('Rana arborícola de ojos rojos', 'Agalychnis callidryas', 4, ''),
+('Salamandra ecuatoriana', 'Bolitoglossa equatoriana', 4, ''),
+('Rana punta de flecha', 'Epipedobates anthonyi', 4, ''),
+
+-- Insectos
+('Mariposa morfo azul', 'Morpho peleides', 5, ''),
+('Escarabajo Hércules', 'Dynastes hercules', 5, ''),
+('Hormiga bala', 'Paraponera clavata', 5, ''),
+('Libélula gigante', 'Megaloprepus caerulatus', 5, ''),
+('Mariposa búho', 'Caligo eurilochus', 5, ''),
+('Escarabajo joya', 'Chrysina gloriosa', 5, ''),
+('Abeja de orquídea', 'Euglossa dilemma', 5, ''),
+('Grillo de matorral', 'Gryllus assimilis', 5, '');

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ListaUsuario, IniciarSesion, CrearUsuario, SubirImagenUsuario, ListaRoles, cambiarContrasena, EditarUsuario, EliminarUsuario} from '../controllers/users/usuario.controller'
+import { ListaUsuario, IniciarSesion, CrearUsuario, SubirImagenUsuario, ListaRoles, cambiarContrasena, EditarUsuario, EliminarUsuario, EditarUsuarioApp} from '../controllers/users/usuario.controller'
 import { upload } from '../middlewares/uploadMiddleware';
 import { validaTokenJwt } from '../middlewares/jwt';
 
@@ -17,7 +17,7 @@ router.post('/subirImagen', validaTokenJwt, upload.single('imagen'), SubirImagen
 //-------------------------------------- PUT -------------------------------------//
 
 router.put('/EditarUsuario', validaTokenJwt, EditarUsuario);
-
+router.post('/EditUserData', validaTokenJwt, EditarUsuarioApp);
 
 //-------------------------------------- DELETE -------------------------------------//
 

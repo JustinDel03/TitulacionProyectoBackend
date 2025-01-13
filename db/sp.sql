@@ -91,6 +91,23 @@ END;
 $$;
  
 
+CREATE OR REPLACE PROCEDURE sp_editar_usuario_app(IN p_datos JSONB)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    p_id_usuario BIGINT;
+BEGIN
+    p_id_usuario := (p_datos->>'id_usuario')::BIGINT;
+
+    UPDATE usuarios
+    SET 
+        nombres = COALESCE(NULLIF(p_datos->>'nombres', ''), nombres),
+        apellidos = COALESCE(NULLIF(p_datos->>'apellidos', ''), apellidos),
+        telefono = COALESCE(NULLIF(p_datos->>'telefono', ''), telefono),
+        fecha_modificado = NOW()
+    WHERE id_usuario = p_id_usuario;
+END;
+$$;
 
 
 CREATE OR REPLACE PROCEDURE sp_cambiar_contrasena(
@@ -224,3 +241,105 @@ BEGIN
     RETURNING id_observacion INTO new_id;
 END;
 $$;
+
+
+CREATE OR REPLACE FUNCTION buscar_alertas(
+    p_id_usuario INTEGER,
+    p_id_estado INTEGER DEFAULT NULL
+)
+RETURNS TABLE(
+    id_alerta BIGINT,
+    tipo_alerta VARCHAR,
+    nivel_prioridad INTEGER,
+    icono_alerta TEXT,
+    usuario VARCHAR,  -- Aseguramos que sea VARCHAR
+    nombre_sendero VARCHAR,
+    nombre_estado VARCHAR,
+    coordenada_longitud NUMERIC,
+    coordenada_latitud NUMERIC,
+    imagen_1 TEXT,
+    imagen_2 TEXT,
+    imagen_3 TEXT,
+    descripcion TEXT,
+    fecha_creado TIMESTAMP,
+    id_estado BIGINT
+)
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        a.id_alerta,
+        b.tipo_alerta,
+        b.nivel_prioridad,
+        b.icono_alerta,
+        (c.nombres || ' ' || c.apellidos)::VARCHAR AS usuario,  -- Convertimos explícitamente a VARCHAR
+        d.nombre_sendero,
+        e.nombre_estado,
+        a.coordenada_longitud,
+        a.coordenada_latitud,
+        a.imagen_1,
+        a.imagen_2,
+        a.imagen_3,
+        a.descripcion,
+        a.fecha_creado,
+        a.id_estado
+    FROM
+        alertas a
+    JOIN tipos_alerta b ON a.id_tipo_alerta = b.id_tipo_alerta
+    JOIN usuarios c ON a.id_usuario = c.id_usuario
+    JOIN senderos d ON a.id_sendero = d.id_sendero
+    JOIN estados_alerta e ON a.id_estado = e.id_estado_alerta
+    WHERE
+        (p_id_usuario IS NULL OR a.id_usuario = p_id_usuario)
+        AND (p_id_estado IS NULL OR a.id_estado <> p_id_estado);
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- FUNCTION: public.buscar_observaciones_estado(boolean, integer)
+
+-- DROP FUNCTION IF EXISTS public.buscar_observaciones_estado(boolean, integer);
+
+CREATE OR REPLACE FUNCTION public.buscar_observaciones_estado(
+	p_estado boolean DEFAULT NULL::boolean,
+	p_id_usuario integer DEFAULT NULL::integer)
+    RETURNS TABLE(id_observacion bigint, id_especie bigint, nombre_comun character varying, nombre_cientifico character varying, nombre_categoria character varying, id_usuario bigint, usuario text, id_sendero bigint, nombre_sendero character varying, descripcion text, fecha_observacion timestamp without time zone, coordenada_longitud numeric, coordenada_latitud numeric, estado boolean, imagen_1 text, imagen_2 text, imagen_3 text, fecha_creado timestamp without time zone) 
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+    ROWS 1000
+
+AS $BODY$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        a.id_observacion,
+        a.id_especie,
+        b.nombre_comun,
+        b.nombre_cientifico,
+        e.nombre_categoria,
+        a.id_usuario,
+        (c.nombres || ' ' || c.apellidos) AS usuario,
+        a.id_sendero,
+        d.nombre_sendero,
+        a.descripcion,
+        a.fecha_observacion, -- Aquí sigue siendo TIMESTAMP
+        a.coordenada_longitud,
+        a.coordenada_latitud,
+        a.estado,
+        a.imagen_1,
+        a.imagen_2,
+        a.imagen_3,
+        a.fecha_creado
+    FROM observaciones a
+    JOIN especies b ON a.id_especie = b.id_especie
+    JOIN usuarios c ON a.id_usuario = c.id_usuario
+    JOIN senderos d ON a.id_sendero = d.id_sendero
+    JOIN categorias_especies e ON b.id_categoria_especie = e.id_categoria_especie
+    WHERE (p_estado IS NULL OR a.estado = p_estado)
+      AND (p_id_usuario IS NULL OR a.id_usuario = p_id_usuario);
+END;
+$BODY$;
+
+ALTER FUNCTION public.buscar_observaciones_estado(boolean, integer)
+    OWNER TO postgres;

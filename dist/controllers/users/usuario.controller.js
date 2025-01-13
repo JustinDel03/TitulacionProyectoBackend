@@ -16,6 +16,7 @@ exports.ListaUsuario = ListaUsuario;
 exports.IniciarSesion = IniciarSesion;
 exports.CrearUsuario = CrearUsuario;
 exports.EditarUsuario = EditarUsuario;
+exports.EditarUsuarioApp = EditarUsuarioApp;
 exports.EliminarUsuario = EliminarUsuario;
 exports.SubirImagenUsuario = SubirImagenUsuario;
 exports.ListaRoles = ListaRoles;
@@ -30,15 +31,14 @@ function ListaUsuario(req, res) {
         try {
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios');
             const usuarios = result.rows;
-            return (0, methods_helpers_1.responseService)(200, usuarios, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, usuarios, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {
             console.error('Error:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
         }
     });
 }
-exports.ListaUsuario = ListaUsuario;
 function IniciarSesion(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { correo, password, tipo_sesion } = req.body;
@@ -53,7 +53,7 @@ function IniciarSesion(req, res) {
             const usuario = result.rows[0];
             const isPassword_valid = yield bcrypt_1.default.compare(password, usuario.password);
             if (!isPassword_valid) {
-                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
+                return (0, methods_helpers_1.responseService)(400, null, "Correo y/o Contraseña incorrecta", true, res);
             }
             const sessionToken = (0, methods_helpers_1.createJwt)({
                 id_usuario: usuario.id_usuario,
@@ -66,21 +66,27 @@ function IniciarSesion(req, res) {
             yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1 WHERE correo = $2', [sessionToken, correo]);
             const resultMenu = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
             const menu = resultMenu.rows;
-            const data = {
-                menu,
-                sessionToken
+            const datos = {
+                id_user: usuario.id_usuario,
+                name: usuario.nombres,
+                lastName: usuario.apellidos,
+                email: usuario.correo,
+                phone: usuario.telefono,
+                photo: usuario.imagen,
+                token: sessionToken
             };
-            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageRespone["200"], false, res);
+            console.log(usuario);
+            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (error) {
             console.error('Error en el login:', error);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
         }
     });
 }
-exports.IniciarSesion = IniciarSesion;
 function CrearUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+        // const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
         const data = req.body;
         const id_rol = parseInt(data.id_rol);
         const nombres = data.nombres;
@@ -145,6 +151,40 @@ function EditarUsuario(req, res) {
         }
     });
 }
+function EditarUsuarioApp(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = req.body;
+        const userData = JSON.parse((req.headers.datos));
+        if (!data.nombres || !data.apellidos || !data.telefono) {
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
+        }
+        try {
+            data.id_usuario = userData.id_usuario;
+            // Llamar al procedimiento almacenado
+            const query = `CALL sp_editar_usuario_app($1);`;
+            const values = [JSON.stringify(data)];
+            yield db_1.dbPool.query(query, values);
+            // Responder al cliente
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios WHERE id_usuario  = $1', [userData.id_usuario]);
+            const usuario = result.rows[0];
+            console.log(usuario);
+            const datos = {
+                id_user: usuario.id_usuario,
+                name: usuario.nombres,
+                lastName: usuario.apellidos,
+                email: usuario.correo,
+                phone: usuario.telefono,
+                photo: usuario.imagen,
+                token: usuario.session_token
+            };
+            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageResponse["200"], false, res);
+        }
+        catch (error) {
+            console.error('Error al editar el usuario:', error);
+            return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
+        }
+    });
+}
 function EliminarUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { id_usuario } = req.params;
@@ -161,7 +201,6 @@ function EliminarUsuario(req, res) {
         }
     });
 }
-exports.EliminarUsuario = EliminarUsuario;
 function SubirImagenUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!req.file) {
@@ -191,7 +230,6 @@ function SubirImagenUsuario(req, res) {
         }
     });
 }
-exports.SubirImagenUsuario = SubirImagenUsuario;
 function ListaRoles(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -229,12 +267,7 @@ function cambiarContrasena(req, res) {
         }
         catch (error) {
             console.error('Error al cambiar contraseña:', error);
-            // res.status(500).json({
-            //   error: true,
-            //   message: 'Error interno del servidor',
-            // });
             return (0, methods_helpers_1.responseService)(500, null, 'Ocurrio un error en el servidor', true, res);
         }
     });
 }
-exports.ListaRoles = ListaRoles;

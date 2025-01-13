@@ -15,11 +15,11 @@ export async function ListaUsuario(req: Request, res: Response) {
     const usuarios = result.rows
 
 
-    return responseService(200, usuarios, messageRespone["200"], false, res );
+    return responseService(200, usuarios, messageResponse["200"], false, res );
 
   } catch (err) {
     console.error('Error:', err);
-    responseService(500,null, messageRespone["500"], false, res);
+    responseService(500,null, messageResponse["500"], false, res);
 
   }
 }
@@ -42,7 +42,7 @@ export async function IniciarSesion(req: Request, res: Response) {
     const isPassword_valid = await bcrypt.compare(password, usuario.password);
 
     if (!isPassword_valid) {
-      return responseService(400, null, messageResponse["400"], true, res);
+      return responseService(400, null, "Correo y/o Contraseña incorrecta", true, res);
     }
 
     const sessionToken = createJwt({
@@ -80,7 +80,7 @@ export async function IniciarSesion(req: Request, res: Response) {
     return responseService(200, datos, messageResponse["200"], false, res );
   } catch (error) {
     console.error('Error en el login:', error);
-    responseService(500,null, messageRespone["500"], false, res)
+    responseService(500,null, messageResponse["500"], false, res)
   }
 }
 
@@ -169,6 +169,8 @@ export async function EditarUsuario(req: Request, res: Response) {
 
     await dbPool.query(query, values);
 
+
+    
     // Responder al cliente
 
     return responseService(201, null, messageResponse["200"], false, res);
@@ -179,6 +181,46 @@ export async function EditarUsuario(req: Request, res: Response) {
   }
 }
 
+
+export async function EditarUsuarioApp(req:Request, res: Response) {
+  const data = req.body;
+  const userData = JSON.parse((req.headers.datos) as string ) as DatosJwt;
+  if ( !data.nombres || !data.apellidos || !data.telefono) {
+    return responseService(400, null, messageResponse["400"], true, res);
+  }
+
+  try {
+      data.id_usuario = userData.id_usuario;
+// Llamar al procedimiento almacenado
+      const query = `CALL sp_editar_usuario_app($1);`;
+      const values = [JSON.stringify(data)];
+
+      await dbPool.query(query, values);
+
+      // Responder al cliente
+
+      const result = await dbPool.query('SELECT * FROM tbv_usuarios WHERE id_usuario  = $1', [userData.id_usuario]);
+
+      const usuario = result.rows[0];
+      console.log(usuario);
+      const datos = {
+        id_user: usuario.id_usuario,
+        name : usuario.nombres,
+        lastName: usuario.apellidos,
+        email:  usuario.correo,
+        phone: usuario.telefono,
+        photo: usuario.imagen, 
+        token: usuario.session_token
+      }
+      
+      return responseService(200,datos , messageResponse["200"], false, res);
+
+  } catch (error) {
+    console.error('Error al editar el usuario:', error);
+    return responseService(500, null, messageResponse["500"], true, res);
+  }
+
+}
 
 export async function EliminarUsuario(req: Request, res: Response) {
 
@@ -284,26 +326,8 @@ export async function cambiarContrasena(req: Request, res: Response){
     return responseService(200, null, 'Contraseña cambiada exitosamente', false, res);
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
-    // res.status(500).json({
-    //   error: true,
-    //   message: 'Error interno del servidor',
-    // });
+
     return responseService(500, null, 'Ocurrio un error en el servidor', true, res);
   }
 }
 
-// export async function recuperContrasena(req: Request, res: Response) {
-//   const {correo} = req.body;
-
-//   try {
-//     const userExist = await dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
-//     if (userExist.rowCount === 0) {
-//       return responseService(400, null, "Usuario no registrado", true, res);
-//     }
-//     const token = jwt.sign({ correo }, process.env.KEY_JWT!, {
-//             expiresIn: process.env.DURATION, // Usa un valor predeterminado si HORAS_JWT no está definido
-//         });
-//   } catch (error) {
-    
-//   }
-// }

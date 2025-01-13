@@ -14,6 +14,7 @@ router.post('/crear', usuario_controller_1.CrearUsuario);
 router.post('/subirImagen', jwt_1.validaTokenJwt, uploadMiddleware_1.upload.single('imagen'), usuario_controller_1.SubirImagenUsuario);
 //-------------------------------------- PUT -------------------------------------//
 router.put('/EditarUsuario', jwt_1.validaTokenJwt, usuario_controller_1.EditarUsuario);
+router.post('/EditUserData', jwt_1.validaTokenJwt, usuario_controller_1.EditarUsuarioApp);
 //-------------------------------------- DELETE -------------------------------------//
 router.delete('/EliminarUsuario/:id_usuario', jwt_1.validaTokenJwt, usuario_controller_1.EliminarUsuario);
 router.post('/cambiarContrasena', jwt_1.validaTokenJwt, usuario_controller_1.cambiarContrasena);

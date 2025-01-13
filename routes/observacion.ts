@@ -5,10 +5,10 @@ import { validaTokenJwt } from '../middlewares/jwt';
 const router: Router = Router();
 
 //-------------------------------------- GET -------------------------------------//
-router.get('/ListaObservaciones', validaTokenJwt, ListaObservaciones);
+router.get('/ListaObservaciones', ListaObservaciones);
 
 //-------------------------------------- POST -------------------------------------//
-router.post('/CrearObservacion', upload.array('imagenes', 3), CrearObservacion);
+router.post('/CrearObservacion', validaTokenJwt,upload.array('imagenes', 3), CrearObservacion);
 
 //-------------------------------------- DELETE ----------------------------------//
 

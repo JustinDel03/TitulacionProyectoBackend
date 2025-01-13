@@ -10,9 +10,15 @@ import { DatosJwt } from '../../models/jwt.interface';
 
 
 export async function ListaAlertas(req: Request, res: Response) {
+
   try {
+  
+    const {id_usuario, id_estado} = req.query;
+
+
     // Consulta las alertas desde la base de datos
-    const result = await dbPool.query('SELECT * FROM tbv_alertas');
+    const result = await dbPool.query('SELECT * FROM buscar_alertas($1, $2)',
+      [id_usuario || null, id_estado || null]);
     const data ={
 
       alertas: result.rows
@@ -43,7 +49,7 @@ export async function CrearAlerta(req: Request, res: Response) {
   // Validar que se haya enviado un archivo
   if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
 
-    return responseService(400, null, messageRespone["400"], true, res);
+    return responseService(400, null, messageResponse["400"], true, res);
   
   }
 
@@ -96,7 +102,7 @@ export async function CrearAlerta(req: Request, res: Response) {
 
 export async function CambiarEstadoAlerta(req: Request, res: Response) {
   try {
-    const { id_alerta, nuevo_estado } = req.body;
+    const { id_alerta, nuevo_estado, } = req.body;
     if (!id_alerta || !nuevo_estado) {
       return responseService(400, null, messageResponse["400"], true, res);
 
@@ -104,7 +110,7 @@ export async function CambiarEstadoAlerta(req: Request, res: Response) {
 
     const result = await dbPool.query(
       'UPDATE alertas SET id_estado = $1 WHERE id_alerta = $2 RETURNING *',
-      [id_estado, id_alerta]
+      [nuevo_estado, id_alerta]
     );
 
     if (result.rowCount === 0) {
@@ -117,7 +123,7 @@ export async function CambiarEstadoAlerta(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", alertaActualizada);
 
-    return responseService(200, alertaActualizada,messageRespone["200"], false, res);
+    return responseService(200, alertaActualizada,messageResponse["200"], false, res);
 
   } catch (error) {
     console.error("Error al cambiar el estado de la alerta:", error);

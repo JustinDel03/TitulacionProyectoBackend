@@ -81,6 +81,6 @@ async function startServer() {
     console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
   });
 }
-}
+
 
 startServer();
