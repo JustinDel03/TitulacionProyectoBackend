@@ -145,3 +145,21 @@ export async function EliminarObservacion(req: Request, res: Response) {
     responseService(500, null, messageResponse["500"], true, res);
   }
 }
+
+
+export async function ListarEspecies(req:Request, res: Response) {
+  try {
+    const result = await dbPool.query("SELECT * FROM  tvb_especies");
+    if(result.rowCount === 0){
+      return responseService(404, null, messageResponse["404"], true, res);
+    }
+
+    const especies = result.rows;
+    const data = {
+      "especies": especies
+    }
+    return responseService(200, data, messageResponse["200"],false, res);
+  } catch (error) {
+    return responseService(500, null, messageResponse["500"], true, res);
+  }
+}
