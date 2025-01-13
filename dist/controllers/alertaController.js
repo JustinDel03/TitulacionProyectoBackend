@@ -9,8 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ListaAlertas = ListaAlertas;
-exports.CrearAlerta = CrearAlerta;
+exports.CrearAlerta = exports.ListaAlertas = void 0;
 const db_1 = require("../db");
 const firebase_helpers_1 = require("../helpers/firebase.helpers");
 function ListaAlertas(req, res) {
@@ -34,6 +33,7 @@ function ListaAlertas(req, res) {
         }
     });
 }
+exports.ListaAlertas = ListaAlertas;
 function CrearAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('Body recibido:', req.body.alerta);
@@ -77,3 +77,4 @@ function CrearAlerta(req, res) {
         }
     });
 }
+exports.CrearAlerta = CrearAlerta;

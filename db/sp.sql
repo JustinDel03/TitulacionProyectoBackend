@@ -1,3 +1,34 @@
+CREATE OR REPLACE PROCEDURE sp_crear_alerta(IN data_alerta, OUT new_id INTEGER JSON)
+LANGUAGE plpgsql AS $$
+BEGIN
+    INSERT INTO alertas (
+        id_tipo_alerta,
+        id_usuario,
+        id_sendero,
+        id_estado,
+        coordenada_longitud,
+        coordenada_latitud,
+        imagen_1,
+        imagen_2,
+        imagen_3,
+        descripcion,
+        fecha_creado
+    ) VALUES (
+        (data_alerta->>'id_tipo_alerta')::BIGINT,
+        (data_alerta->>'id_usuario')::BIGINT,
+        (data_alerta->>'id_sendero')::BIGINT,
+        (data_alerta->>'id_estado')::BIGINT,
+        (data_alerta->>'coordenada_longitud')::DECIMAL,
+        (data_alerta->>'coordenada_latitud')::DECIMAL,
+        data_alerta->>'imagen_1',
+        data_alerta->>'imagen_2',
+        data_alerta->>'imagen_3',
+        data_alerta->>'descripcion',
+        NOW()
+    )
+    RETURNING id_alerta INTO new_id;
+END;
+$$;
 
 CREATE OR REPLACE PROCEDURE sp_crear_usuario(
     p_datos JSONB
@@ -153,5 +184,43 @@ BEGIN
     IF resultado IS NULL THEN
         resultado := '[]'::JSON;
     END IF;
+END;
+$$;
+ 
+
+CREATE OR REPLACE PROCEDURE sp_crear_observacion(
+	IN data_observacion json,
+	OUT new_id integer)
+LANGUAGE 'plpgsql'
+AS $$
+BEGIN
+    INSERT INTO observaciones (
+        id_especie,
+        id_usuario,
+        id_sendero,
+	    descripcion,
+		fecha_observacion,
+        coordenada_longitud,
+        coordenada_latitud,
+		estado,
+        imagen_1,
+		imagen_2,
+		imagen_3,
+        fecha_creado,
+		fecha_modificado
+    ) VALUES (
+        (data_observacion->>'id_especie')::BIGINT,
+        (data_observacion->>'id_usuario')::BIGINT,
+        (data_observacion->>'id_sendero')::BIGINT,
+        (data_observacion->>'descripcion'),
+        (data_observacion->>'fecha_observacion')::TIMESTAMP,
+        (data_observacion->>'coordenada_longitud')::DECIMAL,
+        (data_observacion->>'coordenada_latitud')::DECIMAL,
+		(data_observacion->>'estado')::BOOLEAN,
+		(data_observacion->>'imagen_1'),
+	    NOW(),
+		NOW()
+    )
+    RETURNING id_observacion INTO new_id;
 END;
 $$;

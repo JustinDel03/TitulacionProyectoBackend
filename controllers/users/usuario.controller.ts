@@ -1,8 +1,8 @@
 import { Request, response, Response } from 'express';
 import { dbPool } from '../../db';
 import bcrypt from 'bcrypt';
-import { bucket } from '../../config/firebase'
-;import { createJwt, responseService } from '../../helpers/methods.helpers';
+import crypto from 'crypto';
+import { bucket } from '../../config/firebase';import { createJwt, responseService } from '../../helpers/methods.helpers';
 import { messageResponse } from '../../helpers/message.helpers';
 import { DatosJwt } from '../../models/jwt.interface';
 import jwt, { JwtPayload } from "jsonwebtoken";import { measureMemory } from 'vm';
@@ -14,23 +14,18 @@ export async function ListaUsuario(req: Request, res: Response) {
 
     const usuarios = result.rows
 
-    res.status(200).json({
-      error: false,
-      message: 'Usuarios obtenidos',
-      data: usuarios
-    });
+
+    return responseService(200, usuarios, messageRespone["200"], false, res );
+
   } catch (err) {
     console.error('Error:', err);
-    res.status(500).json({
-      error: true,
-      message: 'Error interno del servidor',
-    });
+    responseService(500,null, messageRespone["500"], false, res);
+
   }
 }
 
 export async function IniciarSesion(req: Request, res: Response) {
-  const { correo, password } = req.body;
-  const {tipo_sesion} = req.headers;
+  const { correo, password, tipo_sesion } = req.body;
 
   if (!correo || !password) {
     return responseService(400, null, messageResponse["400"], true, res);
@@ -53,8 +48,8 @@ export async function IniciarSesion(req: Request, res: Response) {
     const sessionToken = createJwt({
       id_usuario : usuario.id_usuario,
       name: usuario.nombres,
-      lastname: usuario.apellidos,
-      
+      rol: usuario.nombre_rol,
+      surname: usuario.apellidos,
       email: usuario.correo,
       phone: usuario.telefono
     }) 
@@ -66,23 +61,9 @@ export async function IniciarSesion(req: Request, res: Response) {
       'UPDATE usuarios SET session_token = $1 WHERE correo = $2',
       [sessionToken, correo]
     );
-    // const resultMenu = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
 
-    
-    // const menu = result.rows.map(row => {
-    //   return {
-    //     menuId: row.id_menu,
-    //     nombreMenu: row.nombre_menu,
-    //     nombreRol: row.nombre_rol,
-    //     icono: row.icono,
-    //     url: row.url,
-    //     correo: row.correo
-    //   };
-    // });
-
-
-    
-    // console.log(menu);
+    const resultMenu = await dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
+    const menu = resultMenu.rows;
 
     const datos = {
       id_user: usuario.id_usuario,
@@ -99,13 +80,9 @@ export async function IniciarSesion(req: Request, res: Response) {
     return responseService(200, datos, messageResponse["200"], false, res );
   } catch (error) {
     console.error('Error en el login:', error);
-    res.status(500).json({
-      error: true,
-      message: 'Error interno del servidor',
-    });
+    responseService(500,null, messageRespone["500"], false, res)
   }
 }
-
 
 export async function CrearUsuario(req: Request, res: Response) {
   // const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
@@ -150,7 +127,6 @@ export async function CrearUsuario(req: Request, res: Response) {
 
 
     console.log('Usuario:', data);
-
 
     const query = `CALL sp_crear_usuario($1);`;
     const values = [JSON.stringify(data)];
@@ -223,9 +199,6 @@ export async function EliminarUsuario(req: Request, res: Response) {
   
   }
 }
-
-
-
 
 
 export async function SubirImagenUsuario(req: Request, res: Response) {

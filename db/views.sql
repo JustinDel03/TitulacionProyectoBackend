@@ -38,6 +38,7 @@ SELECT
 	b.nivel_prioridad,
 	b.icono_alerta,
 	(c.nombres ||' '|| c. apellidos) AS usuario,
+	d.nombre_sendero,
 	e.nombre_estado,
 	a.coordenada_longitud,
 	a.coordenada_latitud,
@@ -51,8 +52,36 @@ FROM
 	alertas a
 JOIN tipos_alerta b ON a.id_tipo_alerta = b.id_tipo_alerta
 JOIN usuarios c ON a.id_usuario = c.id_usuario
+JOIN senderos d ON a.id_sendero = d.id_sendero
 JOIN estados_alerta e ON a.id_estado = e.id_estado_alerta;
 
+
+
+CREATE VIEW tbv_observaciones AS
+SELECT 
+	a.id_observacion,
+	a.id_especie,
+	b.nombre_comun,
+	b.nombre_cientifico,
+	e.nombre_categoria,
+	a.id_usuario,
+    (c.nombres::text || ' '::text) || c.apellidos::text AS usuario,
+	a.id_sendero,
+	d.nombre_sendero,
+	a.descripcion,
+	a.fecha_observacion,
+	a.coordenada_longitud,
+	a.coordenada_latitud,
+	a.estado,
+	a.imagen_1,
+	a.imagen_2,
+	a.imagen_3,
+	a.fecha_creado
+ FROM observaciones a 
+JOIN especies b ON a.id_especie = b.id_especie
+JOIN usuarios c ON a.id_usuario = c.id_usuario
+JOIN senderos d ON a.id_sendero = d.id_sendero
+JOIN categorias_especies e ON b.id_categoria_especie = e.id_categoria_especie 
 
 CREATE VIEW tbv_last_observations AS
 SELECT  o.id_observacion , e.nombre_comun, e.nombre_cientifico As nombre_especie, o.fecha_observacion, u.nombres AS usuario

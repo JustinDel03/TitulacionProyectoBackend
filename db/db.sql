@@ -260,25 +260,22 @@ CREATE TABLE usuarios (
     fecha_modificado TIMESTAMP
 );
 
--- 8. Tipos de alerta
-CREATE TABLE tipos_alerta (
-    id_tipo_alerta BIGSERIAL PRIMARY KEY,
-    tipo_alerta VARCHAR(255) NOT NULL,
-    nivel_prioridad INT NOT NULL,
-    icono_alerta TEXT,
-    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
+DROP TABLE IF EXISTS senderos
+CREATE TABLE senderos (
+    id_sendero BIGSERIAL PRIMARY KEY,
+    id_organizacion BIGINT NOT NULL REFERENCES organizaciones(id_organizacion),
+    nombre_sendero VARCHAR(255) NOT NULL,
+    distancia_km DECIMAL(5,2),
+    tiempo_sendero INTERVAL,
+    dificultad VARCHAR(15),
+    guia BOOLEAN,
+    fecha_creado TIMESTAMP DEFAULT NOW(),
     fecha_modificado TIMESTAMP
 );
 
--- 9. Estados de alerta
-CREATE TABLE estados_alerta (
-    id_estado_alerta BIGSERIAL PRIMARY KEY,
-    nombre_estado VARCHAR(255) NOT NULL,
-    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
-    fecha_modificado TIMESTAMP
-);
 
--- 10. Alertas
+
+DROP TABLE IF EXISTS alertas;
 CREATE TABLE alertas (
     id_alerta BIGSERIAL PRIMARY KEY,
     id_tipo_alerta BIGINT NOT NULL REFERENCES tipos_alerta(id_tipo_alerta),
@@ -302,7 +299,41 @@ CREATE TABLE categorias_especies (
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- 12. Especies
+
+DROP TABLE IF EXISTS menus;
+CREATE TABLE menus (
+    id_menu BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    icono VARCHAR(255),
+    url VARCHAR(255) NOT NULL,
+    disponible BOOLEAN,
+    id_tipo_sesion BIGINT NOT NULL REFERENCES tipos_sesion(id_tipo_sesion),
+    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
+    fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+DROP TABLE IF EXISTS menu_roles;
+CREATE TABLE menu_roles (
+    id_menu_rol BIGSERIAL PRIMARY KEY,
+    id_menu BIGINT NOT NULL REFERENCES menus(id_menu),
+    id_rol BIGINT NOT NULL REFERENCES roles(id_rol),
+    disponible BOOLEAN,
+    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
+    fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+DROP TABLE IF EXISTS categorias_especies;
+CREATE TABLE categorias_especies (
+    id_categoria_especie BIGSERIAL PRIMARY KEY,
+    nombre_categoria VARCHAR(255) NOT NULL,
+    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
+    fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+DROP TABLE IF EXISTS especies;
 CREATE TABLE especies (
     id_especie BIGSERIAL PRIMARY KEY,
     nombre_comun VARCHAR(255) NOT NULL,
@@ -313,8 +344,9 @@ CREATE TABLE especies (
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- 13. Observaciones
-CREATE TABLE observacion (
+
+DROP TABLE IF EXISTS observaciones;
+CREATE TABLE observaciones (
     id_observacion BIGSERIAL PRIMARY KEY,
     id_especie BIGINT NOT NULL REFERENCES especies(id_especie),
     id_usuario BIGINT NOT NULL REFERENCES usuarios(id_usuario),
@@ -324,6 +356,10 @@ CREATE TABLE observacion (
     coordenada_longitud DECIMAL(9,6),
     coordenada_latitud DECIMAL(9,6),
     estado BOOLEAN,
+    imagen_1 TEXT,
+	imagen_2 TEXT,
+    imagen_3 TEXT,
     fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
+

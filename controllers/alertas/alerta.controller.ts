@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { dbPool } from '../../db';
-
 import { subirImagen  } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
 import { messageResponse } from '../../helpers/message.helpers';
@@ -29,7 +28,6 @@ export async function ListaAlertas(req: Request, res: Response) {
 }
 
 export async function CrearAlerta(req: Request, res: Response) {
-  console.log('Body recibido:', req.body.alerta);
 
   const alerta = JSON.parse(req.body.alerta);
    const datos = JSON.parse((req.headers.datos) as string ) as DatosJwt;
@@ -44,10 +42,9 @@ export async function CrearAlerta(req: Request, res: Response) {
 
   // Validar que se haya enviado un archivo
   if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-    return res.status(400).json({
-      error: true,
-      message: 'No se ha proporcionado ninguna imagen',
-    });
+
+    return responseService(400, null, messageRespone["400"], true, res);
+  
   }
 
 
@@ -106,8 +103,8 @@ export async function CambiarEstadoAlerta(req: Request, res: Response) {
     }
 
     const result = await dbPool.query(
-      'UPDATE tbv_alertas SET estado = $1 WHERE id_alerta = $2 RETURNING *',
-      [nuevo_estado, id_alerta]
+      'UPDATE alertas SET id_estado = $1 WHERE id_alerta = $2 RETURNING *',
+      [id_estado, id_alerta]
     );
 
     if (result.rowCount === 0) {
@@ -120,7 +117,7 @@ export async function CambiarEstadoAlerta(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", alertaActualizada);
 
-    return responseService(200, alertaActualizada, "Estado de alerta actualizado", false, res);
+    return responseService(200, alertaActualizada,messageRespone["200"], false, res);
 
   } catch (error) {
     console.error("Error al cambiar el estado de la alerta:", error);
@@ -136,7 +133,7 @@ export async function EliminarAlerta(req: Request, res: Response) {
     }
 
     const result = await dbPool.query(
-      'DELETE FROM tbv_alertas WHERE id_alerta = $1 RETURNING *',
+      'DELETE FROM alertas WHERE id_alerta = $1 RETURNING *',
       [id_alerta]
     );
 

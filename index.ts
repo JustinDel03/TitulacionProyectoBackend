@@ -3,12 +3,12 @@ import express from "express";
 import cors from "cors";
 import { createServer } from "http"; // Importamos HTTP para WebSockets
 import { Server } from "socket.io"; // Importamos Socket.io
-import { initDbConnections, closeDbConnections } from "./db";
+import { initDbConnections } from "./db";
 import usuarioRoutes from "./routes/usuario";
 import alertaRoutes from "./routes/alerta";
 import config from "./config/config";
 import home from './routes/home.route';
-
+import observacionRoutes from './routes/observacion';
 const { maxRetries, retryDelay } = config.retryConfig;
 
 
@@ -44,10 +44,9 @@ async function startServer() {
           "Número máximo de intentos alcanzado. No se pudo conectar a la base de datos."
         );
         process.exit(1);
-
       }
     }
-
+  }
 
 
 
@@ -56,12 +55,9 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use(cors());
 
-   
-
   // WebSockets
   io.on("connection", (socket) => {
     console.log(`🔌 Cliente conectado: ${socket.id}`);
-
 
     socket.on("disconnect", () => {
       console.log(`❌ Cliente desconectado: ${socket.id}`);
@@ -74,6 +70,7 @@ async function startServer() {
   // Rutas API
   app.use("/api/Usuario", usuarioRoutes);
   app.use("/api/Alerta", alertaRoutes);
+  app.use("/api/Observacion", observacionRoutes);
   app.use('/api', home)
 
 
@@ -86,4 +83,4 @@ async function startServer() {
 }
 }
 
-  startServer();
+startServer();

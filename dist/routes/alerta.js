@@ -10,4 +10,9 @@ router.get('/ListaAlertas', jwt_1.validaTokenJwt, alerta_controller_1.ListaAlert
 router.get('/tipo_alertas', alerta_controller_1.tipos_alertas);
 //-------------------------------------- POST -------------------------------------//
 router.post('/CrearAlerta', jwt_1.validaTokenJwt, uploadMiddleware_1.upload.array('imagenes', 3), alerta_controller_1.CrearAlerta);
+router.post('/CrearAlerta', uploadMiddleware_1.upload.array('imagenes', 3), alerta_controller_1.CrearAlerta);
+//-------------------------------------- DELETE ----------------------------------//
+router.delete('/EliminarAlerta/:id_alerta', jwt_1.validaTokenJwt, alerta_controller_1.EliminarAlerta);
+//-------------------------------------- PUT -------------------------------------//
+router.put('/CambiarEstadoAlerta/:id_alerta/:id_estado', jwt_1.validaTokenJwt, alerta_controller_1.CambiarEstadoAlerta);
 exports.default = router;
