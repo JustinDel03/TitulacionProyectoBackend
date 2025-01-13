@@ -56,7 +56,7 @@ export async function CrearObservacion(req: Request, res: Response) {
     observacion.imagen_1 = imageUrls[0] || null;
     observacion.imagen_2 = imageUrls[1] || null;
     observacion.imagen_3 = imageUrls[2] || null;
-
+    observacion.estado = false;
     // Llamar al procedimiento almacenado para guardar la alerta
     const insertResult = await dbPool.query('CALL sp_crear_observacion($1::JSON, $2)', [observacion, null]);
     const id_observacion = insertResult.rows[0].new_id;
