@@ -163,3 +163,29 @@ export async function ListarEspecies(req:Request, res: Response) {
     return responseService(500, null, messageResponse["500"], true, res);
   }
 }
+
+
+export async function buscarObservacion(req:Request, res: Response) {
+  try {
+      const {especie} = req.body;
+      if(!especie){
+        return responseService(400, null, messageResponse["400"], true,res);
+      }
+
+
+      const result  = await dbPool.query("SELECT * FROM fn_buscar_observaciones($1)", [especie]);
+      if(result.rowCount === 0){
+        return responseService(404, null, messageResponse["404"], true, res);
+      }
+
+
+      const observaciones = result.rows;
+      const data = {
+        observaciones: observaciones
+      }
+      return responseService(200, data, messageResponse["200"], false, res);
+  } catch (error) {
+    console.log(error);
+    return responseService(500, null, messageResponse["500"], true, res);
+  }
+}
