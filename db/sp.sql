@@ -343,3 +343,46 @@ $BODY$;
 
 ALTER FUNCTION public.buscar_observaciones_estado(boolean, integer)
     OWNER TO postgres;
+
+
+
+CREATE OR REPLACE FUNCTION fn_buscar_observaciones(busqueda TEXT)
+RETURNS JSON
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    -- Consulta para buscar coincidencias
+    SELECT json_agg(t)
+    INTO resultado
+    FROM (
+        SELECT 
+            o.id_observacion,
+            o.estado,
+            e.nombre_comun,
+            e.nombre_cientifico,
+            s.nombre_sendero,
+            (u.nombres || ' ' || u.apellidos) AS usuario,
+            o.fecha_observacion,
+            o.coordenada_longitud,
+            o.coordenada_latitud,
+            o.descripcion
+        FROM observaciones o
+		JOIN senderos s ON o.id_sendero = s.id_sendero
+        JOIN especies e ON o.id_especie = e.id_especie
+        JOIN usuarios u ON o.id_usuario = u.id_usuario
+		
+        WHERE 
+            e.nombre_comun ILIKE '%' || busqueda || '%' 
+            OR e.nombre_cientifico ILIKE '%' || busqueda || '%'
+    ) t;
+
+    -- Si no hay resultados, retornar un mensaje vacío
+    IF resultado IS NULL THEN
+        RETURN '[]'::JSON;
+    END IF;
+
+    RETURN resultado;
+END;
+$$;
