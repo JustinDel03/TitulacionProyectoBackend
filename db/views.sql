@@ -84,10 +84,30 @@ JOIN senderos d ON a.id_sendero = d.id_sendero
 JOIN categorias_especies e ON b.id_categoria_especie = e.id_categoria_especie 
 
 CREATE VIEW tbv_last_observations AS
-SELECT  o.id_observacion , e.nombre_comun, e.nombre_cientifico As nombre_especie, o.fecha_observacion, u.nombres AS usuario, o.imagen_1
-from observaciones o
-join especies e on e.id_especie = o.id_especie
-join usuarios u on u.id_usuario = o.id_usuario
+SELECT 
+        a.id_observacion,
+        a.id_especie,
+        b.nombre_comun,
+        b.nombre_cientifico,
+        e.nombre_categoria,
+        a.id_usuario,
+        (c.nombres || ' ' || c.apellidos) AS usuario,
+        a.id_sendero,
+        d.nombre_sendero,
+        a.descripcion,
+        a.fecha_observacion, -- Aquí sigue siendo TIMESTAMP
+        a.coordenada_longitud,
+        a.coordenada_latitud,
+        a.estado,
+        a.imagen_1,
+        a.imagen_2,
+        a.imagen_3,
+        a.fecha_creado
+    FROM observaciones a
+    JOIN especies b ON a.id_especie = b.id_especie
+    JOIN usuarios c ON a.id_usuario = c.id_usuario
+    JOIN senderos d ON a.id_sendero = d.id_sendero
+    JOIN categorias_especies e ON b.id_categoria_especie = e.id_categoria_especie
 order by o.fecha_observacion DESC
 limit 5
 
@@ -109,3 +129,32 @@ SELECT
 	nombre_sendero
 FROM 
 	senderos;
+
+
+
+
+CREATE OR REPLACE VIEW vw_buscar_observaciones AS
+SELECT 
+        a.id_observacion,
+        a.id_especie,
+        b.nombre_comun,
+        b.nombre_cientifico,
+        e.nombre_categoria,
+        a.id_usuario,
+        (c.nombres || ' ' || c.apellidos) AS usuario,
+        a.id_sendero,
+        d.nombre_sendero,
+        a.descripcion,
+        a.fecha_observacion, -- Aquí sigue siendo TIMESTAMP
+        a.coordenada_longitud,
+        a.coordenada_latitud,
+        a.estado,
+        a.imagen_1,
+        a.imagen_2,
+        a.imagen_3,
+        a.fecha_creado
+    FROM observaciones a
+    JOIN especies b ON a.id_especie = b.id_especie
+    JOIN usuarios c ON a.id_usuario = c.id_usuario
+    JOIN senderos d ON a.id_sendero = d.id_sendero
+    JOIN categorias_especies e ON b.id_categoria_especie = e.id_categoria_especie
