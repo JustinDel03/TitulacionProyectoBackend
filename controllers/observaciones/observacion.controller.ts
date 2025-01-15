@@ -168,12 +168,20 @@ export async function ListarEspecies(req:Request, res: Response) {
 export async function buscarObservacion(req:Request, res: Response) {
   try {
       const {especie} = req.body;
+      console.log(req.body)
       if(!especie){
         return responseService(400, null, messageResponse["400"], true,res);
       }
+      const searchTerm =  `%${especie}%`// Término de búsqueda, asegúrate de agregar los comodines '%' para LIKE.
+const query = `
+  SELECT *
+  FROM vw_buscar_observaciones
+  WHERE nombre_comun ILIKE $1
+     OR nombre_cientifico ILIKE $1
+`;
 
 
-      const result  = await dbPool.query("SELECT * FROM fn_buscar_observaciones($1)", [especie]);
+      const result  = await dbPool.query(query, [searchTerm]);
       if(result.rowCount === 0){
         return responseService(404, null, messageResponse["404"], true, res);
       }
@@ -183,6 +191,7 @@ export async function buscarObservacion(req:Request, res: Response) {
       const data = {
         observaciones: observaciones
       }
+      console.log(data);
       return responseService(200, data, messageResponse["200"], false, res);
   } catch (error) {
     console.log(error);

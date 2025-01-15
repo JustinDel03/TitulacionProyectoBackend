@@ -7,7 +7,7 @@ const router: Router = Router();
 //-------------------------------------- GET -------------------------------------//
 router.get('/ListaObservaciones', ListaObservaciones);
 router.get('/ListarEspecies', ListarEspecies);
-router.get('/buscarObservacion', buscarObservacion);
+router.post('/buscarObservacion', buscarObservacion);
 
 //-------------------------------------- POST -------------------------------------//
 router.post('/CrearObservacion', validaTokenJwt,upload.array('imagenes', 3), CrearObservacion);
