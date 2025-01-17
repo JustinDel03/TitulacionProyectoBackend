@@ -132,6 +132,8 @@ function tipos_alertas(req, res) {
                 tipos_alertas: result.rows,
                 senderos: sendero.rows
             };
+            console.log(result);
+            console.log(sendero);
             return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {

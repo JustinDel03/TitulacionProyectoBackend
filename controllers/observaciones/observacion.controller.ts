@@ -4,6 +4,7 @@ import { subirImagen  } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
 import { messageResponse } from '../../helpers/message.helpers';
 import { DatosJwt } from '../../models/jwt.interface';
+import { measureMemory } from 'vm';
 
 
 export async function ListaObservaciones(req: Request, res: Response) {
@@ -197,4 +198,26 @@ const query = `
     console.log(error);
     return responseService(500, null, messageResponse["500"], true, res);
   }
+}
+
+
+export async function searchSpecies(req: Request, res: Response) {
+
+  try {
+    const {especie} = req.body;
+    const response = await  dbPool.query('CALL sp_buscar_especies($1, $2)', [especie, null]);
+    
+    console.log(response)
+    const especies = response.rows;
+    const data = {
+      especies: especies
+    }
+
+    return responseService(200, data, messageResponse["200"],false, res);
+
+  } catch (error) {
+    console.log(`Error: ${error}`)
+    return responseService(400, null, messageResponse["400"], true,res);
+  }
+  
 }

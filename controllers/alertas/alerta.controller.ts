@@ -170,6 +170,8 @@ export async function tipos_alertas(req: Request, res: Response) {
       senderos: sendero.rows
 
     }
+    console.log(result);
+    console.log(sendero);
     return responseService(200, data, messageResponse["200"], false, res );
 
   } catch (err) {

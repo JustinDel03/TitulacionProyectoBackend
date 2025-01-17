@@ -108,6 +108,7 @@ SELECT
     JOIN usuarios c ON a.id_usuario = c.id_usuario
     JOIN senderos d ON a.id_sendero = d.id_sendero
     JOIN categorias_especies e ON b.id_categoria_especie = e.id_categoria_especie
+    WHERE a.estado = FALSE
 order by o.fecha_observacion DESC
 limit 5
 
@@ -158,3 +159,5 @@ SELECT
     JOIN usuarios c ON a.id_usuario = c.id_usuario
     JOIN senderos d ON a.id_sendero = d.id_sendero
     JOIN categorias_especies e ON b.id_categoria_especie = e.id_categoria_especie
+
+

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ListaObservaciones, CrearObservacion, EliminarObservacion, CambiarEstadoObservacion, ListarEspecies, buscarObservacion  } from '../controllers/observaciones/observacion.controller';
+import { ListaObservaciones, CrearObservacion, EliminarObservacion, CambiarEstadoObservacion, ListarEspecies, buscarObservacion, searchSpecies  } from '../controllers/observaciones/observacion.controller';
 import { upload } from '../middlewares/uploadMiddleware';
 import { validaTokenJwt } from '../middlewares/jwt';
 const router: Router = Router();
@@ -7,10 +7,11 @@ const router: Router = Router();
 //-------------------------------------- GET -------------------------------------//
 router.get('/ListaObservaciones', ListaObservaciones);
 router.get('/ListarEspecies', ListarEspecies);
-router.post('/buscarObservacion', buscarObservacion);
 
 //-------------------------------------- POST -------------------------------------//
 router.post('/CrearObservacion', validaTokenJwt,upload.array('imagenes', 3), CrearObservacion);
+router.post('/buscarObservacion', buscarObservacion);
+router.post('/searchEspecies', searchSpecies);
 
 //-------------------------------------- DELETE ----------------------------------//
 
