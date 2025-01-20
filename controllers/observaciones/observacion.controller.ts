@@ -207,13 +207,11 @@ export async function searchSpecies(req: Request, res: Response) {
     const {especie} = req.body;
     const response = await  dbPool.query('CALL sp_buscar_especies($1, $2)', [especie, null]);
     
-    console.log(response)
-    const especies = response.rows;
-    const data = {
-      especies: especies
-    }
+    console.log(response.rows[0])
+    const especies = response.rows[0];
+   
 
-    return responseService(200, data, messageResponse["200"],false, res);
+    return responseService(200, especies, messageResponse["200"],false, res);
 
   } catch (error) {
     console.log(`Error: ${error}`)
