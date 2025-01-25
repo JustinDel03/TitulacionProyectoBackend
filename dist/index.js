@@ -20,7 +20,10 @@ const socket_io_1 = require("socket.io"); // Importamos Socket.io
 const db_1 = require("./db");
 const usuario_1 = __importDefault(require("./routes/usuario"));
 const alerta_1 = __importDefault(require("./routes/alerta"));
+const especie_1 = __importDefault(require("./routes/especie"));
+const sendero_1 = __importDefault(require("./routes/sendero"));
 const config_1 = __importDefault(require("./config/config"));
+const home_route_1 = __importDefault(require("./routes/home.route"));
 const observacion_1 = __importDefault(require("./routes/observacion"));
 const { maxRetries, retryDelay } = config_1.default.retryConfig;
 const app = (0, express_1.default)();
@@ -70,6 +73,9 @@ function startServer() {
         app.use("/api/Usuario", usuario_1.default);
         app.use("/api/Alerta", alerta_1.default);
         app.use("/api/Observacion", observacion_1.default);
+        app.use("/api/Especie", especie_1.default);
+        app.use("/api/Sendero", sendero_1.default);
+        app.use('/api', home_route_1.default);
         // Iniciar servidor
         const port = process.env.PORT || config_1.default.server.port;
         server.listen(port, () => {

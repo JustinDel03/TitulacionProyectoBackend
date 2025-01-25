@@ -21,11 +21,11 @@ const validaTokenJwt = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             next();
         }
         else {
-            return (0, methods_helpers_1.responseService)(401, null, message_helpers_1.messageRespone["tokenExpire"], true, res);
+            return (0, methods_helpers_1.responseService)(401, null, message_helpers_1.messageResponse["tokenExpire"], true, res);
         }
     }
     else {
-        return (0, methods_helpers_1.responseService)(401, null, message_helpers_1.messageRespone["401"], true, res);
+        return (0, methods_helpers_1.responseService)(401, null, message_helpers_1.messageResponse["401"], true, res);
     }
 });
 exports.validaTokenJwt = validaTokenJwt;

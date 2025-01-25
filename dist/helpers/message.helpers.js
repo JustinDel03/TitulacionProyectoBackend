@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.messageRespone = void 0;
-exports.messageRespone = {
+exports.messageResponse = void 0;
+exports.messageResponse = {
     "200": "Proceso ejecutado exitosamente",
     "201": "Registro creado exitosamente",
     "204": "Proceso ejecutado, pero sin contenido de respuesta",

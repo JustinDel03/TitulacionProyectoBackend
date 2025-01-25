@@ -1,4 +1,4 @@
-export const messageRespone = {
+export const messageResponse = {
     "200": "Proceso ejecutado exitosamente",
     "201": "Registro creado exitosamente",
     "204": "Proceso ejecutado, pero sin contenido de respuesta",

@@ -9,22 +9,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EliminarAlerta = exports.CambiarEstadoAlerta = exports.CrearAlerta = exports.ListaAlertas = void 0;
+exports.TipoAlertas = exports.EliminarAlerta = exports.CambiarEstadoAlerta = exports.CrearAlerta = exports.ListaAlertas = exports.ListaAlertasCompleta = void 0;
 const db_1 = require("../../db");
 const firebase_helpers_1 = require("../../helpers/firebase.helpers");
 const methods_helpers_1 = require("../../helpers/methods.helpers");
 const message_helpers_1 = require("../../helpers/message.helpers");
-function ListaAlertas(req, res) {
+function ListaAlertasCompleta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Consulta las alertas desde la base de datos
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_alertas');
             const alertas = result.rows;
-            return (0, methods_helpers_1.responseService)(200, alertas, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, alertas, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {
             console.error('Error:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
+        }
+    });
+}
+exports.ListaAlertasCompleta = ListaAlertasCompleta;
+function ListaAlertas(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { id_usuario, id_estado } = req.query;
+            // Consulta las alertas desde la base de datos
+            const result = yield db_1.dbPool.query('SELECT * FROM buscar_alertas($1, $2)', [id_usuario || null, id_estado || null]);
+            const data = {
+                alertas: result.rows
+            };
+            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageResponse["200"], false, res);
+        }
+        catch (err) {
+            console.error('Error:', err);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
         }
     });
 }
@@ -32,13 +50,17 @@ exports.ListaAlertas = ListaAlertas;
 function CrearAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const alerta = JSON.parse(req.body.alerta);
+        const datos = JSON.parse((req.headers.datos));
+        alerta.id_usuario = datos.id_usuario;
         // Validar que los campos requeridos estén presentes
         if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta || !alerta.descripcion) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            console.log('faltan datos');
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         // Validar que se haya enviado un archivo
         if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            console.log('error con las imagenes');
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         try {
             // Subir las imágenes a Firebase Storage y obtener las URLs firmadas
@@ -47,22 +69,24 @@ function CrearAlerta(req, res) {
             alerta.imagen_1 = imageUrls[0] || null;
             alerta.imagen_2 = imageUrls[1] || null;
             alerta.imagen_3 = imageUrls[2] || null;
+            alerta.id_estado = 1;
             // Llamar al procedimiento almacenado para guardar la alerta
             const insertResult = yield db_1.dbPool.query('CALL sp_crear_alerta($1::JSON, $2)', [alerta, null]);
             const id_alerta = insertResult.rows[0].new_id;
+            console.log(alerta);
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_alertas WHERE id_alerta = $1', [id_alerta]);
             if (result.rowCount === 0) {
-                return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+                return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
             }
             const alertaCompleta = result.rows[0];
             // 📢 Emitimos la nueva alerta a todos los clientes conectados
             const io = req.app.get("socketio");
             io.emit("actualizarAlerta", alertaCompleta);
-            return (0, methods_helpers_1.responseService)(201, null, message_helpers_1.messageRespone["201"], false, res);
+            return (0, methods_helpers_1.responseService)(200, null, message_helpers_1.messageResponse["201"], false, res);
         }
         catch (err) {
             console.error('Error al crear la alerta:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
         }
     });
 }
@@ -70,23 +94,23 @@ exports.CrearAlerta = CrearAlerta;
 function CambiarEstadoAlerta(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { id_alerta, id_estado } = req.body;
+            const { id_alerta, id_estado, } = req.body;
             if (!id_alerta || !id_estado) {
-                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
             }
             const result = yield db_1.dbPool.query('UPDATE alertas SET id_estado = $1 WHERE id_alerta = $2 RETURNING *', [id_estado, id_alerta]);
             if (result.rowCount === 0) {
-                return (0, methods_helpers_1.responseService)(404, null, message_helpers_1.messageRespone["404"], true, res);
+                return (0, methods_helpers_1.responseService)(404, null, message_helpers_1.messageResponse["404"], true, res);
             }
             const alertaActualizada = result.rows[0];
             // 📢 Emitimos la actualización de estado a los clientes conectados
             const io = req.app.get("socketio");
             io.emit("actualizarAlerta", alertaActualizada);
-            return (0, methods_helpers_1.responseService)(200, alertaActualizada, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, alertaActualizada, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (error) {
             console.error("Error al cambiar el estado de la alerta:", error);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
         }
     });
 }
@@ -96,21 +120,40 @@ function EliminarAlerta(req, res) {
         try {
             const { id_alerta } = req.params;
             if (!id_alerta) {
-                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
             }
             const result = yield db_1.dbPool.query('DELETE FROM alertas WHERE id_alerta = $1 RETURNING *', [id_alerta]);
             if (result.rowCount === 0) {
-                return (0, methods_helpers_1.responseService)(404, null, message_helpers_1.messageRespone["404"], true, res);
+                return (0, methods_helpers_1.responseService)(404, null, message_helpers_1.messageResponse["404"], true, res);
             }
             // 📢 Emitimos evento de eliminación a todos los clientes conectados
             const io = req.app.get("socketio");
             io.emit("actualizarAlerta", { id_alerta, eliminada: true });
-            return (0, methods_helpers_1.responseService)(200, null, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, null, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (error) {
             console.error("Error al eliminar la alerta:", error);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
         }
     });
 }
 exports.EliminarAlerta = EliminarAlerta;
+function TipoAlertas(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_tipo_alertas');
+            const sendero = yield db_1.dbPool.query('SELECT * FROM tbv_sendero');
+            // const tipo_alertas = result.rows;
+            const data = {
+                tipos_alertas: result.rows,
+                senderos: sendero.rows
+            };
+            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageResponse["200"], false, res);
+        }
+        catch (err) {
+            console.error('Error:', err);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
+        }
+    });
+}
+exports.TipoAlertas = TipoAlertas;

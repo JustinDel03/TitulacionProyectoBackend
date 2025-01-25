@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ListaRoles = exports.SubirImagenUsuario = exports.EliminarUsuario = exports.EditarUsuario = exports.CrearUsuario = exports.IniciarSesion = exports.ListaUsuario = void 0;
+exports.cambiarContrasena = exports.ListaRoles = exports.SubirImagenUsuario = exports.EliminarUsuario = exports.EditarUsuarioApp = exports.EditarUsuario = exports.CrearUsuario = exports.IniciarSesion = exports.ListaObservacionesAlertasXUsuario = exports.ListaUsuario = void 0;
 const db_1 = require("../../db");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const firebase_1 = require("../../config/firebase");
@@ -23,30 +23,44 @@ function ListaUsuario(req, res) {
         try {
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios');
             const usuarios = result.rows;
-            return (0, methods_helpers_1.responseService)(200, usuarios, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, usuarios, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {
             console.error('Error:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
         }
     });
 }
 exports.ListaUsuario = ListaUsuario;
+function ListaObservacionesAlertasXUsuario(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_observaciones_alertas_usuarios');
+            const observacionesAlertasXUsuario = result.rows;
+            return (0, methods_helpers_1.responseService)(200, observacionesAlertasXUsuario, message_helpers_1.messageResponse["200"], false, res);
+        }
+        catch (err) {
+            console.error('Error:', err);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
+        }
+    });
+}
+exports.ListaObservacionesAlertasXUsuario = ListaObservacionesAlertasXUsuario;
 function IniciarSesion(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { correo, password, tipo_sesion } = req.body;
         if (!correo || !password) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         try {
             const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [correo]);
             if (result.rowCount === 0) {
-                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+                return (0, methods_helpers_1.responseService)(400, null, 'Usuario no Existe', true, res);
             }
             const usuario = result.rows[0];
             const isPassword_valid = yield bcrypt_1.default.compare(password, usuario.password);
             if (!isPassword_valid) {
-                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+                return (0, methods_helpers_1.responseService)(400, null, "Correo y/o Contraseña incorrecta", true, res);
             }
             const sessionToken = (0, methods_helpers_1.createJwt)({
                 id_usuario: usuario.id_usuario,
@@ -54,38 +68,52 @@ function IniciarSesion(req, res) {
                 rol: usuario.nombre_rol,
                 surname: usuario.apellidos,
                 email: usuario.correo,
-                phone: usuario.phone
+                phone: usuario.telefono
             });
             yield db_1.dbPool.query('UPDATE usuarios SET session_token = $1 WHERE correo = $2', [sessionToken, correo]);
-            const resultMenu = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2', [correo, tipo_sesion]);
+            const resultMenu = yield db_1.dbPool.query('SELECT * FROM tbv_usuario_menu WHERE correo = $1 AND tipo_sesion = $2 order by nombre_menu', [correo, tipo_sesion]);
             const menu = resultMenu.rows;
-            const data = {
-                menu,
-                sessionToken
+            const datos = {
+                id_user: usuario.id_usuario,
+                name: usuario.nombres,
+                lastName: usuario.apellidos,
+                email: usuario.correo,
+                phone: usuario.telefono,
+                photo: usuario.imagen,
+                token: sessionToken,
+                menu
             };
-            return (0, methods_helpers_1.responseService)(200, data, message_helpers_1.messageRespone["200"], false, res);
+            console.log(usuario);
+            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (error) {
             console.error('Error en el login:', error);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], false, res);
         }
     });
 }
 exports.IniciarSesion = IniciarSesion;
 function CrearUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+        // const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
         const data = req.body;
+        const id_rol = parseInt(data.id_rol);
+        const nombres = data.nombres;
+        const apellidos = data.apellidos;
+        const correo = data.correo;
+        const password = data.password;
+        console.log(data.nombre);
         if (!data.id_rol || !data.nombres || !data.apellidos || !data.correo || !data.password) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         const parsedIdRol = parseInt(data.id_rol);
         if (isNaN(parsedIdRol)) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         try {
             const userExist = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [data.correo]);
             if (userExist.rowCount !== 0) {
-                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+                return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
             }
             const hashedPassword = yield bcrypt_1.default.hash(data.password, 10);
             data.password = hashedPassword;
@@ -95,11 +123,11 @@ function CrearUsuario(req, res) {
             const query = `CALL sp_crear_usuario($1);`;
             const values = [JSON.stringify(data)];
             yield db_1.dbPool.query(query, values);
-            return (0, methods_helpers_1.responseService)(201, null, message_helpers_1.messageRespone["201"], false, res);
+            return (0, methods_helpers_1.responseService)(200, null, message_helpers_1.messageResponse["201"], false, res);
         }
         catch (err) {
             console.error('Error al crear el usuario:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
         }
     });
 }
@@ -108,11 +136,11 @@ function EditarUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = req.body;
         if (!data.id_rol || !data.nombres || !data.apellidos || !data.correo) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         const parsedIdRol = parseInt(data.id_rol);
         if (isNaN(parsedIdRol)) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         try {
             if (data.password !== '') {
@@ -124,29 +152,63 @@ function EditarUsuario(req, res) {
             const query = `CALL sp_editar_usuario($1);`;
             const values = [JSON.stringify(data)];
             yield db_1.dbPool.query(query, values);
-            // Responder al cliente
-            return (0, methods_helpers_1.responseService)(201, null, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(201, null, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {
             console.error('Error al editar el usuario:', err);
-            return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+            return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
         }
     });
 }
 exports.EditarUsuario = EditarUsuario;
+function EditarUsuarioApp(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = req.body;
+        const userData = JSON.parse((req.headers.datos));
+        if (!data.nombres || !data.apellidos || !data.telefono) {
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
+        }
+        try {
+            data.id_usuario = userData.id_usuario;
+            // Llamar al procedimiento almacenado
+            const query = `CALL sp_editar_usuario_app($1);`;
+            const values = [JSON.stringify(data)];
+            yield db_1.dbPool.query(query, values);
+            // Responder al cliente
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios WHERE id_usuario  = $1', [userData.id_usuario]);
+            const usuario = result.rows[0];
+            console.log(usuario);
+            const datos = {
+                id_user: usuario.id_usuario,
+                name: usuario.nombres,
+                lastName: usuario.apellidos,
+                email: usuario.correo,
+                phone: usuario.telefono,
+                photo: usuario.imagen,
+                token: usuario.session_token
+            };
+            return (0, methods_helpers_1.responseService)(200, datos, message_helpers_1.messageResponse["200"], false, res);
+        }
+        catch (error) {
+            console.error('Error al editar el usuario:', error);
+            return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
+        }
+    });
+}
+exports.EditarUsuarioApp = EditarUsuarioApp;
 function EliminarUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { id_usuario } = req.params;
         if (!id_usuario) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         try {
             yield db_1.dbPool.query('DELETE FROM usuarios WHERE id_usuario = $1', [id_usuario]);
-            return (0, methods_helpers_1.responseService)(200, null, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, null, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {
             console.error('Error al eliminar el usuario:', err);
-            return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+            return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
         }
     });
 }
@@ -154,7 +216,7 @@ exports.EliminarUsuario = EliminarUsuario;
 function SubirImagenUsuario(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!req.file) {
-            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageRespone["400"], true, res);
+            return (0, methods_helpers_1.responseService)(400, null, message_helpers_1.messageResponse["400"], true, res);
         }
         const { originalname, buffer } = req.file;
         try {
@@ -166,17 +228,17 @@ function SubirImagenUsuario(req, res) {
             });
             blobStream.on('error', (err) => {
                 console.error('Error al subir la imagen:', err);
-                return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+                return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
             });
             blobStream.on('finish', () => __awaiter(this, void 0, void 0, function* () {
                 const public_url = `https://storage.googleapis.com/${firebase_1.bucket.name}/${blob.name}`;
-                return (0, methods_helpers_1.responseService)(200, { image_url: public_url }, message_helpers_1.messageRespone["200"], false, res);
+                return (0, methods_helpers_1.responseService)(200, { image_url: public_url }, message_helpers_1.messageResponse["200"], false, res);
             }));
             blobStream.end(buffer);
         }
         catch (err) {
             console.error('Error interno al subir la imagen:', err);
-            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], true, res);
+            (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageResponse["500"], true, res);
         }
     });
 }
@@ -186,11 +248,41 @@ function ListaRoles(req, res) {
         try {
             const result = yield db_1.dbPool.query('SELECT * FROM roles');
             const roles = result.rows;
-            return (0, methods_helpers_1.responseService)(200, roles, message_helpers_1.messageRespone["200"], false, res);
+            return (0, methods_helpers_1.responseService)(200, roles, message_helpers_1.messageResponse["200"], false, res);
         }
         catch (err) {
-            return (0, methods_helpers_1.responseService)(500, null, message_helpers_1.messageRespone["500"], false, res);
+            console.error('Error:', err);
+            res.status(500).json({
+                error: true,
+                message: 'Error interno del servidor',
+            });
         }
     });
 }
 exports.ListaRoles = ListaRoles;
+function cambiarContrasena(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const body = req.body;
+        const datos = JSON.parse((req.headers.datos));
+        try {
+            const oldPassword = body.oldPassword;
+            const newPassword = body.newPassword;
+            const result = yield db_1.dbPool.query('SELECT * FROM tbv_usuarios WHERE correo = $1', [datos.email]);
+            const usuario = result.rows[0];
+            const isPassword_valid = yield bcrypt_1.default.compare(oldPassword, usuario.password);
+            if (!isPassword_valid) {
+                return (0, methods_helpers_1.responseService)(400, null, "La contraseña no es correcta", true, res);
+            }
+            usuario.password = yield bcrypt_1.default.hash(newPassword, 10);
+            const query = `CALL sp_cambiar_contrasena($1, $2);`;
+            const values = [datos.email, usuario.password];
+            yield db_1.dbPool.query(query, values);
+            return (0, methods_helpers_1.responseService)(200, null, 'Contraseña cambiada exitosamente', false, res);
+        }
+        catch (error) {
+            console.error('Error al cambiar contraseña:', error);
+            return (0, methods_helpers_1.responseService)(500, null, 'Ocurrio un error en el servidor', true, res);
+        }
+    });
+}
+exports.cambiarContrasena = cambiarContrasena;

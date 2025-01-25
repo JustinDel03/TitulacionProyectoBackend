@@ -9,7 +9,7 @@ require("../globalconfig");
 const responseService = (codigo, datos, mensaje = "", error, resp) => {
     resp.statusCode = codigo;
     return resp.json({
-        "datos": datos ? datos : null,
+        "data": datos ? datos : null,
         "mensaje": mensaje,
         "error": error
     });
