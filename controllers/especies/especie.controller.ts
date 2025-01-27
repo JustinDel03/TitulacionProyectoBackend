@@ -5,7 +5,6 @@ import { responseService } from '../../helpers/methods.helpers';
 import { messageResponse } from '../../helpers/message.helpers';
 import { DatosJwt } from '../../models/jwt.interface';
 
-
 export async function ListaCategoriasEspecie(req: Request, res: Response) {
     try {
 
@@ -179,7 +178,7 @@ export async function EliminarEspecie(req: Request, res: Response) {
 
         // 📢 Emitimos evento de eliminación a todos los clientes conectados
         const io = req.app.get("socketio");
-        io.emit("actualizarAlerta", { id_especie, eliminada: true });
+        io.emit("actualizarEspecie", { id_especie, eliminada: true });
 
         return responseService(200, null, messageResponse["200"], false, res);
 

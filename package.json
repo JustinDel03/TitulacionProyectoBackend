@@ -2,12 +2,13 @@
   "name": "backend-observa-gye",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "nodemon dist/index.js",
     "build": "tsc",
-    "dev": "tsc && node dist/index.js"
+    "dev": "tsc && node dist/index.js",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",

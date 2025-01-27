@@ -23,7 +23,6 @@ const io = new Server(server, {
   },
 });
 
-
 async function startServer() {
   let connected = false;
   let attempts = 0;

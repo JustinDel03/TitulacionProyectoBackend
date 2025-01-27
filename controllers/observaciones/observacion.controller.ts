@@ -66,11 +66,11 @@ export async function CrearObservacion(req: Request, res: Response) {
 
   const observacion = JSON.parse(req.body.observacion);
   const datos = JSON.parse((req.headers.datos) as string) as DatosJwt;
-  
+
   observacion.id_usuario = datos.id_usuario;
   console.log('body: ', observacion);
   // Validar que los campos requeridos estén presentes
-  if (!observacion || !observacion.descripcion || !observacion.coordenada_longitud || !observacion.coordenada_latitud) {
+  if (!observacion || !observacion.coordenada_longitud || !observacion.coordenada_latitud) {
     return responseService(400, null, messageResponse["400"], true, res);
   }
 
@@ -95,7 +95,7 @@ export async function CrearObservacion(req: Request, res: Response) {
     // Llamar al procedimiento almacenado para guardar la alerta
     const insertResult = await dbPool.query('CALL sp_crear_observacion($1::JSON, $2)', [observacion, null]);
     const id_observacion = insertResult.rows[0].new_id;
-    
+
     const result = await dbPool.query(
       'SELECT * FROM tbv_observaciones WHERE id_observacion = $1',
       [id_observacion]
@@ -109,7 +109,7 @@ export async function CrearObservacion(req: Request, res: Response) {
 
     // 📢 Emitimos la nueva alerta a todos los clientes conectados
     const io = req.app.get("socketio");
-    io.emit("actualizarAlerta", observacionActualizada);
+    io.emit("actualizarObservacion", observacionActualizada);
 
     return responseService(200, null, messageResponse["200"], false, res);
 
@@ -196,7 +196,7 @@ export async function EliminarObservacion(req: Request, res: Response) {
 
     // 📢 Emitimos evento de eliminación a todos los clientes conectados
     const io = req.app.get("socketio");
-    io.emit("actualizarAlerta", { id_observacion, eliminada: true });
+    io.emit("actualizarObservacion", { id_observacion, eliminada: true });
 
     return responseService(200, null, messageResponse["200"], false, res);
 
@@ -209,38 +209,34 @@ export async function EliminarObservacion(req: Request, res: Response) {
 
 export async function buscarObservacion(req: Request, res: Response) {
   try {
-    const { especie }: { especie?: string } = req.body; 
-
-    console.log(req.body);
-
+    const { especie } = req.body;
+    console.log(req.body)
     if (!especie) {
       return responseService(400, null, messageResponse["400"], true, res);
     }
-
-    const searchTerm = `%${especie}%`;
-
+    const searchTerm = `%${especie}%`// Término de búsqueda, asegúrate de agregar los comodines '%' para LIKE.
     const query = `
-      SELECT *
-      FROM vw_buscar_observaciones
-      WHERE nombre_comun ILIKE $1
-         OR nombre_cientifico ILIKE $1
-    `;
+  SELECT *
+  FROM vw_buscar_observaciones
+  WHERE nombre_comun ILIKE $1
+     OR nombre_cientifico ILIKE $1
+`;
+
 
     const result = await dbPool.query(query, [searchTerm]);
-
     if (result.rowCount === 0) {
-      return responseService(404, null, messageResponse["404"], true, res);
+      return responseService(404, null, 'No se encontraron observaciones', true, res);
     }
+
 
     const observaciones = result.rows;
     const data = {
-      observaciones,
-    };
-
+      observaciones: observaciones
+    }
     console.log(data);
     return responseService(200, data, messageResponse["200"], false, res);
   } catch (error) {
-    console.error("Error en buscarObservacion:", error);
+    console.log(error);
     return responseService(500, null, messageResponse["500"], true, res);
   }
 }

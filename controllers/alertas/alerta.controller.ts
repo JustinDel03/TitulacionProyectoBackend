@@ -53,7 +53,7 @@ export async function CrearAlerta(req: Request, res: Response) {
   const datos = JSON.parse((req.headers.datos) as string ) as DatosJwt;
   alerta.id_usuario = datos.id_usuario;
   // Validar que los campos requeridos estén presentes
-  if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta || !alerta.descripcion) {
+  if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta) {
     console.log('faltan datos' )
     return responseService(400, null, messageResponse["400"], true, res);
     
@@ -103,7 +103,7 @@ export async function CrearAlerta(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", alertaCompleta);
 
-    return responseService(200, null, messageResponse["201"], false, res);
+    return responseService(201, null, 'Alerta creada correctamen, un administrador validara la informacion', false, res);
 
 
   } catch (err) {
