@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { dbPool } from '../../db';
-import { subirImagen  } from '../../helpers/firebase.helpers';
+import { subirImagen } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
 import { messageResponse } from '../../helpers/message.helpers';
 import { DatosJwt } from '../../models/jwt.interface';
@@ -9,16 +9,16 @@ import { DatosJwt } from '../../models/jwt.interface';
 export async function ListaAlertasCompleta(req: Request, res: Response) {
 
   try {
-  
+
     // Consulta las alertas desde la base de datos
     const result = await dbPool.query('SELECT * FROM tbv_alertas');
     const alertas = result.rows;
 
-  
-    return responseService(200, alertas , messageResponse["200"], false, res );
+
+    return responseService(200, alertas, messageResponse["200"], false, res);
   } catch (err) {
     console.error('Error:', err);
-    responseService(500,null, messageResponse["500"], false, res)
+    responseService(500, null, messageResponse["500"], false, res)
   }
 }
 
@@ -26,52 +26,52 @@ export async function ListaAlertasCompleta(req: Request, res: Response) {
 export async function ListaAlertas(req: Request, res: Response) {
 
   try {
-  
-    const {id_usuario, id_estado} = req.query;
+
+    const { id_usuario, id_estado } = req.query;
 
 
     // Consulta las alertas desde la base de datos
     const result = await dbPool.query('SELECT * FROM buscar_alertas($1, $2)',
       [id_usuario || null, id_estado || null]);
-    const data ={
+    const data = {
 
       alertas: result.rows
 
-    } 
+    }
 
-    return responseService(200, data , messageResponse["200"], false, res );
+    return responseService(200, data, messageResponse["200"], false, res);
 
   } catch (err) {
     console.error('Error:', err);
-    responseService(500,null, messageResponse["500"], false, res)
+    responseService(500, null, messageResponse["500"], false, res)
   }
 }
 
 export async function CrearAlerta(req: Request, res: Response) {
 
   const alerta = JSON.parse(req.body.alerta);
-  const datos = JSON.parse((req.headers.datos) as string ) as DatosJwt;
+  const datos = JSON.parse((req.headers.datos) as string) as DatosJwt;
   alerta.id_usuario = datos.id_usuario;
   // Validar que los campos requeridos estén presentes
   if (!alerta || !alerta.id_usuario || !alerta.id_tipo_alerta) {
-    console.log('faltan datos' )
+    console.log('faltan datos')
     return responseService(400, null, messageResponse["400"], true, res);
-    
+
   }
 
   // Validar que se haya enviado un archivo
   if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
     console.log('error con las imagenes')
     return responseService(400, null, messageResponse["400"], true, res);
-  
+
   }
 
 
   try {
     // Subir las imágenes a Firebase Storage y obtener las URLs firmadas
     const imageUrls: string[] = await Promise.all(
-      req.files.map((file: Express.Multer.File) => 
-        
+      req.files.map((file: Express.Multer.File) =>
+
         subirImagen('alertas', file.originalname, file.buffer, file.mimetype)
       )
     );
@@ -103,7 +103,7 @@ export async function CrearAlerta(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", alertaCompleta);
 
-    return responseService(201, null, 'Alerta creada correctamen, un administrador validara la informacion', false, res);
+    return responseService(200, null, 'Alerta creada correctamen, un administrador validara la informacion', false, res);
 
 
   } catch (err) {
@@ -136,7 +136,7 @@ export async function CambiarEstadoAlerta(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarAlerta", alertaActualizada);
 
-    return responseService(200, alertaActualizada,messageResponse["200"], false, res);
+    return responseService(200, alertaActualizada, messageResponse["200"], false, res);
 
   } catch (error) {
     console.error("Error al cambiar el estado de la alerta:", error);
@@ -176,17 +176,17 @@ export async function EliminarAlerta(req: Request, res: Response) {
 export async function TipoAlertas(req: Request, res: Response) {
   try {
     const result = await dbPool.query('SELECT * FROM tbv_tipo_alertas');
-    const sendero =  await dbPool.query('SELECT * FROM tbv_sendero');
+    const sendero = await dbPool.query('SELECT * FROM tbv_sendero');
     // const tipo_alertas = result.rows;
     const data = {
-      tipos_alertas : result.rows,
+      tipos_alertas: result.rows,
       senderos: sendero.rows
     }
-    return responseService(200, data, messageResponse["200"], false, res );
+    return responseService(200, data, messageResponse["200"], false, res);
 
   } catch (err) {
     console.error('Error:', err);
-    responseService(500,null, messageResponse["500"], false, res)
+    responseService(500, null, messageResponse["500"], false, res)
 
   }
 }
