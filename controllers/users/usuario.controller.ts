@@ -1,11 +1,8 @@
-import { Request, response, Response } from 'express';
+import { Request, Response } from 'express';
 import { dbPool } from '../../db';
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
 import { bucket } from '../../config/firebase';import { createJwt, responseService } from '../../helpers/methods.helpers';
-import { messageResponse } from '../../helpers/message.helpers';
 import { DatosJwt } from '../../models/jwt.interface';
-import jwt, { JwtPayload } from "jsonwebtoken";import { measureMemory } from 'vm';
 
 
 export async function ListaUsuario(req: Request, res: Response) {
@@ -15,12 +12,11 @@ export async function ListaUsuario(req: Request, res: Response) {
     const usuarios = result.rows
 
 
-    return responseService(200, usuarios, messageResponse["200"], false, res );
+    return responseService(200, usuarios, "Lista de usuarios obtenida", false, res );
 
   } catch (err) {
     console.error('Error:', err);
-    responseService(500,null, messageResponse["500"], false, res);
-
+    responseService(500,null, "Error al obtener la lista de usuarios", false, res);
   }
 }
 
@@ -30,12 +26,11 @@ export async function ListaObservacionesAlertasXUsuario(req: Request, res: Respo
 
     const observacionesAlertasXUsuario = result.rows
 
-
-    return responseService(200, observacionesAlertasXUsuario, messageResponse["200"], false, res);
+    return responseService(200, observacionesAlertasXUsuario, "Lista Observaciones por usuario obtenida", false, res);
 
   } catch (err) {
     console.error('Error:', err);
-    responseService(500, null, messageResponse["500"], false, res);
+    responseService(500, null, "Error al obtener la lista de observaciones por usuario", false, res);
 
   }
 }
@@ -44,7 +39,7 @@ export async function IniciarSesion(req: Request, res: Response) {
   const { correo, password, tipo_sesion } = req.body;
 
   if (!correo || !password) {
-    return responseService(400, null, messageResponse["400"], true, res);
+    return responseService(400, null, "Erro al iniciar sesion", true, res);
   }
 
   try {
@@ -94,36 +89,28 @@ export async function IniciarSesion(req: Request, res: Response) {
 
 
     console.log(usuario);
-    return responseService(200, datos, messageResponse["200"], false, res );
+    return responseService(200, datos, "inicio exitoso", false, res );
   } catch (error) {
     console.error('Error en el login:', error);
-    responseService(500,null, messageResponse["500"], false, res)
+    responseService(500,null, "Error al iniciar sesion", false, res)
   }
 }
 
+
 export async function CrearUsuario(req: Request, res: Response) {
-  // const { id_rol, nombres, apellidos, correo, password, telefono, imagen } = req.body;
-
-
 
   const data = req.body;
-  const id_rol = parseInt(data.id_rol);
-  const nombres = data.nombres;
-  const apellidos = data.apellidos;
-  const correo = data.correo;
-  const password = data.password;
-  
+
   console.log(data.nombre)
 
-
-
   if (!data.id_rol || !data.nombres || !data.apellidos || !data.correo || !data.password) {
-    return responseService(400, null, messageResponse["400"], true, res);
+    return responseService(400, null, "Error, falta uno de los parametros", true, res);
   }
 
   const parsedIdRol = parseInt(data.id_rol);
+
   if (isNaN(parsedIdRol)) {
-    return responseService(400, null, messageResponse["400"], true, res);
+    return responseService(400, null, "Error, no tiene asignado rol", true, res);
   }
 
   try {
@@ -133,7 +120,7 @@ export async function CrearUsuario(req: Request, res: Response) {
     );
 
     if (userExist.rowCount !== 0) {
-      return responseService(400, null, messageResponse["400"], true, res);
+      return responseService(400, null, "Error, el usuario ya existe", true, res);
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -150,12 +137,12 @@ export async function CrearUsuario(req: Request, res: Response) {
 
     await dbPool.query(query, values);
 
-    return responseService(200, null, messageResponse["201"], false, res);
+    return responseService(200, null, "Usuario creado correctamente", false, res);
 
   } catch (err) {
     console.error('Error al crear el usuario:', err);
 
-    responseService(500, null, messageResponse["500"], true, res);
+    responseService(500, null, "Error al crear el usuario", true, res);
   }
 }
 
@@ -163,12 +150,12 @@ export async function EditarUsuario(req: Request, res: Response) {
   const data = req.body;
 
   if (!data.id_rol || !data.nombres || !data.apellidos || !data.correo) {
-    return responseService(400, null, messageResponse["400"], true, res);
+    return responseService(400, null, "Error, falta uno de los parametros", true, res);
   }
 
   const parsedIdRol = parseInt(data.id_rol);
   if (isNaN(parsedIdRol)) {
-    return responseService(400, null, messageResponse["400"], true, res);
+    return responseService(400, null, "Error no tiene rol asignado", true, res);
   }
 
   try {
@@ -186,11 +173,11 @@ export async function EditarUsuario(req: Request, res: Response) {
 
     await dbPool.query(query, values);
 
-    return responseService(201, null, messageResponse["200"], false, res);
+    return responseService(201, null, "El usuario fue editato correctamente", false, res);
 
   } catch (err) {
     console.error('Error al editar el usuario:', err);
-    return responseService(500, null, messageResponse["500"], true, res);
+    return responseService(500, null, "Error al editar el usuario", true, res);
   }
 }
 
@@ -199,7 +186,7 @@ export async function EditarUsuarioApp(req:Request, res: Response) {
   const data = req.body;
   const userData = JSON.parse((req.headers.datos) as string ) as DatosJwt;
   if ( !data.nombres || !data.apellidos || !data.telefono) {
-    return responseService(400, null, messageResponse["400"], true, res);
+    return responseService(400, null, "Error, falta uno de los parametros", true, res);
   }
 
   try {
@@ -226,11 +213,11 @@ export async function EditarUsuarioApp(req:Request, res: Response) {
         token: usuario.session_token
       }
       
-      return responseService(200,datos , messageResponse["200"], false, res);
+      return responseService(200,datos , "Proceso exitoso", false, res);
 
   } catch (error) {
     console.error('Error al editar el usuario:', error);
-    return responseService(500, null, messageResponse["500"], true, res);
+    return responseService(500, null, "Error al editar el usuario", true, res);
   }
 
 }
@@ -240,17 +227,17 @@ export async function EliminarUsuario(req: Request, res: Response) {
   const { id_usuario } = req.params;
 
   if (!id_usuario) {
-    return responseService(400, null, messageResponse["400"], true, res);
+    return responseService(400, null, "Error al eliminar el usuario, no se proporciono el ID", true, res);
   }
 
   try {
     await dbPool.query('DELETE FROM usuarios WHERE id_usuario = $1', [id_usuario]);
 
-    return responseService(200, null, messageResponse["200"], false, res);
+    return responseService(200, null, "Usuario eliminado correctamente", false, res);
 
   } catch (err) {
     console.error('Error al eliminar el usuario:', err);
-    return responseService(500, null, messageResponse["500"], true, res);
+    return responseService(500, null, "Error al tratar de eliminar el usuario", true, res);
   
   }
 }
@@ -258,7 +245,7 @@ export async function EliminarUsuario(req: Request, res: Response) {
 
 export async function SubirImagenUsuario(req: Request, res: Response) {
   if (!req.file) {
-    return responseService(400, null, messageResponse["400"], true, res);
+    return responseService(400, null, "Error, no se proporciono una imagen", true, res);
   }
 
   const { originalname, buffer } = req.file;
@@ -274,14 +261,14 @@ export async function SubirImagenUsuario(req: Request, res: Response) {
     blobStream.on('error', (err) => {
       console.error('Error al subir la imagen:', err);
       
-      return responseService(500, null, messageResponse["500"], true, res);
+      return responseService(500, null, "Error al tratar de subir la imagen", true, res);
       
     });
 
     blobStream.on('finish', async () => {
       const public_url = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
-      return responseService(200, { image_url: public_url }, messageResponse["200"], false, res);
+      return responseService(200, { image_url: public_url }, "Imagen cargada con exito", false, res);
 
     });
 
@@ -289,18 +276,17 @@ export async function SubirImagenUsuario(req: Request, res: Response) {
   } catch (err) {
     console.error('Error interno al subir la imagen:', err);
 
-    responseService(500, null, messageResponse["500"], true, res);
+    responseService(500, null, "Error interno al subir la imagen", true, res);
     
   }
 }
-
 
 export async function ListaRoles(req: Request, res: Response) {
   try {
     const result = await dbPool.query('SELECT * FROM roles');
 
     const roles = result.rows
-    return responseService(200, roles, messageResponse["200"], false, res );
+    return responseService(200, roles, "Lista de Roles Obtenida", false, res );
 
   } catch (err) {
     console.error('Error:', err);
@@ -309,10 +295,6 @@ export async function ListaRoles(req: Request, res: Response) {
       message: 'Error interno del servidor',
     });
   }
-
-
-  
-  
 }
 
 export async function cambiarContrasena(req: Request, res: Response){

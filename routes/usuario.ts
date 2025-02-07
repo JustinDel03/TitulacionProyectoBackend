@@ -29,5 +29,4 @@ router.post('/cambiarContrasena', validaTokenJwt, cambiarContrasena);
 //router.post('/cambioContrasena', validarTokenJwt, cambioContraseña);
 
 
-
 export default router;
