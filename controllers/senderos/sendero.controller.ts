@@ -9,11 +9,12 @@ export async function ListaSenderos(req: Request, res: Response) {
 
     const result = await dbPool.query('SELECT * FROM senderos');
     const senderos = result.rows;
-    
-    return responseService(200, senderos, "Lista de senderos obtenida", false, res);
+
+
+    return responseService(200, senderos, messageResponse["200"], false, res);
   } catch (err) {
     console.error('Error:', err);
-    responseService(500, null, "Error al obtener la lista de senderos", false, res)
+    responseService(500, null, messageResponse["500"], false, res)
   }
 }
 
@@ -32,7 +33,7 @@ export async function CrearSendero(req: Request, res: Response) {
     );
 
     if (result.rowCount === 0) {
-      return responseService(500, null, "Error, no se encontro el sendero creado", true, res);
+      return responseService(500, null, messageResponse["500"], true, res);
     }
 
     const senderoActualizado = result.rows[0];
@@ -41,12 +42,12 @@ export async function CrearSendero(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarSendero", senderoActualizado);
 
-    return responseService(200, null, "El sendero fue creado correctamente", false, res);
+    return responseService(200, null, messageResponse["200"], false, res);
 
 
   } catch (err) {
     console.error('Error al crear la observacion:', err);
-    responseService(500, null, "Error al crear el sendero", true, res);
+    responseService(500, null, messageResponse["500"], true, res);
   }
 }
 
@@ -62,7 +63,7 @@ export async function EditarSendero(req: Request, res: Response) {
 
     // Validar que se proporcione el ID del sendero
     if (!sendero.id_sendero) {
-      return responseService(400, null, "Error no se proporciono el ID del sendero", true, res);
+      return responseService(400, null, messageResponse["400"], true, res);
     }
 
     // Invoca el procedimiento almacenado para editar el sendero
@@ -75,7 +76,7 @@ export async function EditarSendero(req: Request, res: Response) {
 
     // Verifica si el registro fue encontrado
     if (result.rowCount === 0) {
-      return responseService(404, null, "Error al encontrar el sendero editado", true, res);
+      return responseService(404, null, messageResponse["404"], true, res);
     }
 
     const senderoActualizado = result.rows[0];
@@ -85,13 +86,13 @@ export async function EditarSendero(req: Request, res: Response) {
     io.emit("actualizarSendero", senderoActualizado);
 
     // Retornar el sendero actualizado al cliente
-    return responseService(200, senderoActualizado, "Sendero editado correctamente", false, res);
+    return responseService(200, senderoActualizado, messageResponse["200"], false, res);
   } catch (error) {
     console.error("Error al actualizar el sendero:", error);
 
     // Manejo de errores específicos para depuración
     const errorMessage = error instanceof Error ? error.message : "Error desconocido.";
-    return responseService(500, null, "Error al editar el sendero", true, res);
+    return responseService(500, null, errorMessage, true, res);
   }
 }
 
@@ -108,14 +109,18 @@ export async function EliminarSendero(req: Request, res: Response) {
       [id_sendero]
     );
 
+    if (result.rowCount === 0) {
+      return responseService(404, null, messageResponse["404"], true, res);
+    }
+
     // 📢 Emitimos evento de eliminación a todos los clientes conectados
     const io = req.app.get("socketio");
     io.emit("actualizarSendero", { id_sendero, eliminada: true });
 
-    return responseService(200, null, "Sendero eliminado correctamente", false, res);
+    return responseService(200, null, messageResponse["200"], false, res);
 
   } catch (error) {
     console.error("Error al eliminar la alerta:", error);
-    responseService(500, null, "Error al eliminar el sendero", true, res);
+    responseService(500, null, messageResponse["500"], true, res);
   }
 }

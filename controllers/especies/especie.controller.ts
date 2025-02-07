@@ -2,17 +2,20 @@ import { Request, Response } from 'express';
 import { dbPool } from '../../db';
 import { subirImagen } from '../../helpers/firebase.helpers';
 import { responseService } from '../../helpers/methods.helpers';
+import { messageResponse } from '../../helpers/message.helpers';
+import { DatosJwt } from '../../models/jwt.interface';
 
 export async function ListaCategoriasEspecie(req: Request, res: Response) {
     try {
 
+        // Consulta las alertas desde la base de datos
         const result = await dbPool.query('SELECT * FROM categorias_especies');
         const categorias_especie = result.rows;
 
-        return responseService(200, categorias_especie, "Lista de categorias de especie obtenida", false, res);
+        return responseService(200, categorias_especie, messageResponse["200"], false, res);
     } catch (err) {
         console.error('Error:', err);
-        responseService(500, null, "Error al obtener la lista de categorias de especie", false, res)
+        responseService(500, null, messageResponse["500"], false, res)
     }
 }
 
@@ -21,26 +24,38 @@ export async function ListarEspecies(req: Request, res: Response) {
     try {
         const result = await dbPool.query("SELECT * FROM  tbv_especies");
         if (result.rowCount === 0) {
-            return responseService(404, null, "No hay especies registradas", true, res);
+            return responseService(404, null, messageResponse["404"], true, res);
         }
 
         const especies = result.rows;
-
-        return responseService(200, especies, "Lista de especie obtenidas", false, res);
+        
+        return responseService(200, especies, messageResponse["200"], false, res);
     } catch (error) {
-        return responseService(500, null, "Error al obtener la lista de especies", true, res);
+        return responseService(500, null, messageResponse["500"], true, res);
     }
 }
 
 
 export async function CrearEspecie(req: Request, res: Response) {
 
+    const especie = JSON.parse(req.body.especie);
+
+    // Validar que los campos requeridos estén presentes
+    if (!especie || !especie.nombre_comun || !especie.nombre_cientifico || !especie.id_categoria_especie) {
+        return responseService(400, null, messageResponse["400"], true, res);
+    }
+
+    // Validar que se haya enviado un archivo
+    if (!req.file) {
+        return responseService(400, null, messageResponse["400"], true, res);
+    }
+
     try {
-        const especie = JSON.parse(req.body.especie);
 
         if (!req.file) {
-            return responseService(400, null, "Error no se ha enviado una imagen", true, res);
+            return responseService(400, null, messageResponse["400"], true, res);
         }
+
 
         const file = req.file;
         const imageUrl: string = await subirImagen(
@@ -49,6 +64,9 @@ export async function CrearEspecie(req: Request, res: Response) {
             file.buffer,
             file.mimetype
         );
+
+        
+
 
         // Agregar las URLs de las imágenes directamente al objeto alerta
         especie.imagen = imageUrl || null;
@@ -62,21 +80,22 @@ export async function CrearEspecie(req: Request, res: Response) {
         );
 
         if (result.rowCount === 0) {
-            return responseService(500, null, "Error al crear la especie", true, res);
+            return responseService(500, null, messageResponse["500"], true, res);
         }
 
         const especieActualizada = result.rows[0];
+
 
         // 📢 Emitimos la nueva alerta a todos los clientes conectados
         const io = req.app.get("socketio");
         io.emit("actualizarEspecie", especieActualizada);
 
-        return responseService(201, null, "Especie creada correctamente", false, res);
+        return responseService(201, null, messageResponse["201"], false, res);
 
 
     } catch (err) {
-        console.error('Error al crear la especie:', err);
-        responseService(500, null, "Error al crear la especie", true, res);
+        console.error('Error al crear la observacion:', err);
+        responseService(500, null, messageResponse["500"], true, res);
     }
 }
 
@@ -84,9 +103,10 @@ export async function CrearEspecie(req: Request, res: Response) {
 export async function EditarEspecie(req: Request, res: Response) {
     try {
         const especie = JSON.parse(req.body.especie);
+        console.log('Data del Frontend', especie);
 
         if (!especie.id_especie) {
-            return responseService(400, null, "Error, no se envio el ID de la especie a editar", true, res);
+            return responseService(400, null, messageResponse["400"], true, res);
         }
 
         let nuevaUrlImagen = null;
@@ -122,7 +142,7 @@ export async function EditarEspecie(req: Request, res: Response) {
         );
 
         if (result.rowCount === 0) {
-            return responseService(404, null, "Error al obtener la especie editada", true, res);
+            return responseService(404, null, messageResponse["404"], true, res);
         }
 
         const especieActualizada = result.rows[0];
@@ -131,10 +151,10 @@ export async function EditarEspecie(req: Request, res: Response) {
         const io = req.app.get("socketio");
         io.emit("actualizarEspecie", especieActualizada);
 
-        return responseService(200, especieActualizada, "Especie editada correctamente", false, res);
+        return responseService(200, especieActualizada, messageResponse["200"], false, res);
     } catch (error) {
         console.error("Error al actualizar la especie:", error);
-        return responseService(500, null, "Error al editar la especie", true, res);
+        return responseService(500, null, messageResponse["500"], true, res);
     }
 }
 
@@ -144,23 +164,27 @@ export async function EliminarEspecie(req: Request, res: Response) {
     try {
         const { id_especie } = req.params;
         if (!id_especie) {
-            return responseService(400, null, "Error, no se envio el ID de la especie a eliminar", true, res);
+            return responseService(400, null, messageResponse["400"], true, res);
         }
 
-        await dbPool.query(
+        const result = await dbPool.query(
             'DELETE FROM especies WHERE id_especie = $1 RETURNING *',
             [id_especie]
         );
+
+        if (result.rowCount === 0) {
+            return responseService(404, null, messageResponse["404"], true, res);
+        }
 
         // 📢 Emitimos evento de eliminación a todos los clientes conectados
         const io = req.app.get("socketio");
         io.emit("actualizarEspecie", { id_especie, eliminada: true });
 
-        return responseService(200, null, "Especie eliminada correctamente", false, res);
+        return responseService(200, null, messageResponse["200"], false, res);
 
     } catch (error) {
         console.error("Error al eliminar la alerta:", error);
-        responseService(500, null, "Hubo un error al eliminar la especie", true, res);
+        responseService(500, null, messageResponse["500"], true, res);
     }
 }
 
@@ -175,11 +199,11 @@ export async function searchSpecies(req: Request, res: Response) {
         const especies = response.rows[0];
 
 
-        return responseService(200, especies, "Especie encontrada", false, res);
+        return responseService(200, especies, messageResponse["200"], false, res);
 
     } catch (error) {
-        console.log(`Error: ${error}`)
-        return responseService(400, null, "Verifique los datos enviados", true, res);
+        console.log(`Error: ${ error }`)
+        return responseService(400, null, messageResponse["400"], true, res);
     }
 
 }

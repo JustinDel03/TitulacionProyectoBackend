@@ -18,7 +18,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://observagye.onrender.com",
+    origin: "http://localhost:4200",
     methods: ["GET", "POST"],
   },
 });
