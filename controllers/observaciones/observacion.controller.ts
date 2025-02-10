@@ -21,6 +21,24 @@ export async function ListaObservacionesCompleta(req: Request, res: Response) {
 }
 
 
+export async function HistorialObservacionesModificadas(req: Request, res: Response) {
+  try {
+
+    // Consulta las alertas desde la base de datos
+    const result = await dbPool.query('SELECT * FROM historial_observaciones_modificadas');
+    const observaciones = result.rows;
+
+
+    return responseService(200, observaciones, "Lista del historial de observaciones modificadas obtenida", false, res);
+  } catch (err) {
+    console.error('Error:', err);
+    responseService(500, null, "Error al obtener el historial de observaciones modificadas", false, res)
+  }
+}
+
+
+
+
 export async function ListaSenderos(req: Request, res: Response) {
   try {
 
@@ -36,6 +54,20 @@ export async function ListaSenderos(req: Request, res: Response) {
   }
 }
 
+export async function ListaEstadosObservacion(req: Request, res: Response) {
+  try {
+
+    // Consulta las alertas desde la base de datos
+    const result = await dbPool.query('SELECT * FROM estados_observacion');
+    const senderos = result.rows;
+
+
+    return responseService(200, senderos, "Lista estados obtenida", false, res);
+  } catch (err) {
+    console.error('Error:', err);
+    responseService(500, null, "Error al obtener la lista de estados", false, res)
+  }
+}
 
 
 export async function ListaObservaciones(req: Request, res: Response) {
@@ -116,7 +148,7 @@ export async function EditarObservacion(req: Request, res: Response) {
   try {
     const observacion = JSON.parse(req.body.observacion)
     const imagenesInfo = JSON.parse(req.body.imagenes)
-
+    console.log(observacion);
     if (!observacion.id_observacion) {
       return responseService(400, null, "Error, no se envio el ID de la observacion a editar", true, res)
     }
@@ -162,6 +194,36 @@ export async function EditarObservacion(req: Request, res: Response) {
   } catch (error) {
     console.error("Error al actualizar la observación:", error)
     return responseService(500, null, "Error al editar la observacion", true, res)
+  }
+}
+
+export async function ActualizarEstadoObservacion(req: Request, res: Response) {
+  try {
+    const { id_observacion, id_estado, } = req.body;
+    if (!id_observacion || !id_estado) {
+      return responseService(400, null, "Error, no se enviaron los parametros necesarios", true, res);
+    }
+
+    const result = await dbPool.query(
+      'UPDATE observaciones SET id_estado = $1 WHERE id_observacion = $2 RETURNING *',
+      [id_estado, id_observacion]
+    );
+
+    if (result.rowCount === 0) {
+      return responseService(404, null, "Error al editar la observacion", true, res);
+    }
+
+    const observacionActualizada = result.rows[0];
+
+    // 📢 Emitimos la actualización de estado a los clientes conectados
+    const io = req.app.get("socketio");
+    io.emit("actualizarObservacion", observacionActualizada);
+
+    return responseService(200, observacionActualizada, "El estado de la observacion cambio", false, res);
+
+  } catch (error) {
+    console.error("Error al cambiar el estado de la observacion:", error);
+    responseService(500, null, "Error al cambiar el estado de la observacion", true, res);
   }
 }
 

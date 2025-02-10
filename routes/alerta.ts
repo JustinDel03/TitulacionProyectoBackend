@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ListaAlertas, ListaAlertasCompleta, CrearAlerta, TipoAlertas, CambiarEstadoAlerta  } from '../controllers/alertas/alerta.controller';
+import { ListaAlertas, ListaAlertasCompleta, ListaEstadosAlerta, CrearAlerta, TipoAlertas, CambiarEstadoAlerta  } from '../controllers/alertas/alerta.controller';
 import { upload } from '../middlewares/uploadMiddleware';
 import { validaTokenJwt } from '../middlewares/jwt';
 const router: Router = Router();
@@ -8,7 +8,7 @@ const router: Router = Router();
 router.get('/ListaAlertas',validaTokenJwt , ListaAlertas);
 router.get('/ListaAlertasCompleta',validaTokenJwt , ListaAlertasCompleta);
 router.get('/TipoAlertas', TipoAlertas )
-
+router.get('/ListaEstadosAlerta',validaTokenJwt, ListaEstadosAlerta);
 //-------------------------------------- POST -------------------------------------//
 router.post('/CrearAlerta', validaTokenJwt, upload.array('imagenes', 3), CrearAlerta);
 

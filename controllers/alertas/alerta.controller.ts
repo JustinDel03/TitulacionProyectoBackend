@@ -21,6 +21,23 @@ export async function ListaAlertasCompleta(req: Request, res: Response) {
   }
 }
 
+export async function ListaEstadosAlerta(req: Request, res: Response) {
+
+  try {
+
+    // Consulta las alertas desde la base de datos
+    const result = await dbPool.query('SELECT * FROM estados_alerta');
+    const alertas = result.rows;
+
+
+    return responseService(200, alertas, "Lista de estados alerta obtenida correctamente", false, res);
+  } catch (err) {
+    console.error('Error:', err);
+    responseService(500, null, "Erro al obtener la lista de los estados de la alerta", false, res)
+  }
+}
+
+
 
 export async function ListaAlertas(req: Request, res: Response) {
 
