@@ -43,7 +43,7 @@ export async function ListaObservaciones(req: Request, res: Response) {
 
     const { estado, id_usuario } = req.query;
 
-    const id_estado = estado !== undefined ? estado === '2' : null;
+    const id_estado = estado !== undefined ? estado: null;
 
     // Consulta las alertas desde la base de datos
     const result = await dbPool.query('SELECT * FROM buscar_observaciones_estado($1,$2)', [id_estado, id_usuario || null]);
