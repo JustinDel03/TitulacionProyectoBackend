@@ -25,7 +25,7 @@ export async function HistorialObservacionesModificadas(req: Request, res: Respo
   try {
 
     // Consulta las alertas desde la base de datos
-    const result = await dbPool.query('SELECT * FROM historial_observaciones_modificadas');
+    const result = await dbPool.query('SELECT * FROM tbv_historial_observaciones_modificadas');
     const observaciones = result.rows;
 
 
