@@ -43,10 +43,10 @@ export async function ListaObservaciones(req: Request, res: Response) {
 
     const { estado, id_usuario } = req.query;
 
-    const estadoBoolean = estado !== undefined ? estado === 'true' : null;
+    const id_estado = estado !== undefined ? estado === '2' : null;
 
     // Consulta las alertas desde la base de datos
-    const result = await dbPool.query('SELECT * FROM buscar_observaciones_estado($1,$2)', [estadoBoolean, id_usuario || null]);
+    const result = await dbPool.query('SELECT * FROM buscar_observaciones_estado($1,$2)', [id_estado, id_usuario || null]);
     const observaciones = result.rows;
     const data = {
       observaciones: observaciones
@@ -84,7 +84,6 @@ export async function CrearObservacion(req: Request, res: Response) {
     observacion.imagen_1 = imageUrls[0] || null;
     observacion.imagen_2 = imageUrls[1] || null;
     observacion.imagen_3 = imageUrls[2] || null;
-    observacion.estado = false;
 
     const insertResult = await dbPool.query('CALL sp_crear_observacion($1::JSON, $2)', [observacion, null]);
     const id_observacion = insertResult.rows[0].new_id;
@@ -104,7 +103,7 @@ export async function CrearObservacion(req: Request, res: Response) {
     const io = req.app.get("socketio");
     io.emit("actualizarObservacion", observacionActualizada);
 
-    return responseService(200, null, "Observacion creada correctamente", false, res);
+    return responseService(200, null, "Observacion creada correctamente, un administrador validara la informacion", false, res);
 
 
   } catch (err) {
@@ -166,7 +165,7 @@ export async function EditarObservacion(req: Request, res: Response) {
   }
 }
 
-
+/*
 export async function EliminarObservacion(req: Request, res: Response) {
   try {
     const { id_observacion } = req.params;
@@ -190,7 +189,7 @@ export async function EliminarObservacion(req: Request, res: Response) {
     responseService(500, null, "Error al eliminar la observacion", true, res);
   }
 }
-
+*/
 
 export async function buscarObservacion(req: Request, res: Response) {
   try {

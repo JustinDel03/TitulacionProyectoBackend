@@ -5,7 +5,6 @@ import { responseService } from '../../helpers/methods.helpers';
 
 export async function ListaCategoriasEspecie(req: Request, res: Response) {
     try {
-
         const result = await dbPool.query('SELECT * FROM categorias_especies');
         const categorias_especie = result.rows;
 

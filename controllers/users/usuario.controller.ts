@@ -65,9 +65,6 @@ export async function IniciarSesion(req: Request, res: Response) {
       phone: usuario.telefono
     }) 
     
-
-
-
     await dbPool.query(
       'UPDATE usuarios SET session_token = $1 WHERE correo = $2',
       [sessionToken, correo]
@@ -86,7 +83,6 @@ export async function IniciarSesion(req: Request, res: Response) {
       token: sessionToken,
       menu
     }
-
 
     console.log(usuario);
     return responseService(200, datos, "inicio exitoso", false, res );

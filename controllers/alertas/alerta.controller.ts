@@ -135,7 +135,7 @@ export async function CambiarEstadoAlerta(req: Request, res: Response) {
     responseService(500, null, "Error al cambiar el estado de la alerta", true, res);
   }
 }
-
+/*
 export async function EliminarAlerta(req: Request, res: Response) {
   try {
     const { id_alerta } = req.params;
@@ -159,7 +159,7 @@ export async function EliminarAlerta(req: Request, res: Response) {
     responseService(500, null, "Error al eliminar la alerta", true, res);
   }
 }
-
+*/
 
 export async function TipoAlertas(req: Request, res: Response) {
   try {

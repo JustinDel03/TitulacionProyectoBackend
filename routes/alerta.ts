@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ListaAlertas, ListaAlertasCompleta, CrearAlerta, TipoAlertas, EliminarAlerta, CambiarEstadoAlerta  } from '../controllers/alertas/alerta.controller';
+import { ListaAlertas, ListaAlertasCompleta, CrearAlerta, TipoAlertas, CambiarEstadoAlerta  } from '../controllers/alertas/alerta.controller';
 import { upload } from '../middlewares/uploadMiddleware';
 import { validaTokenJwt } from '../middlewares/jwt';
 const router: Router = Router();
@@ -14,7 +14,7 @@ router.post('/CrearAlerta', validaTokenJwt, upload.array('imagenes', 3), CrearAl
 
 
 //-------------------------------------- DELETE ----------------------------------//
-router.delete('/EliminarAlerta/:id_alerta',validaTokenJwt, EliminarAlerta);
+//router.delete('/EliminarAlerta/:id_alerta',validaTokenJwt, EliminarAlerta);
 
 
 //-------------------------------------- PUT -------------------------------------//

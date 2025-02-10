@@ -346,20 +346,20 @@ CREATE TABLE especies (
 
 
 DROP TABLE IF EXISTS observaciones;
-CREATE TABLE observaciones (
+CREATE TABLE IF NOT EXISTS observaciones (
     id_observacion BIGSERIAL PRIMARY KEY,
     id_especie BIGINT NOT NULL REFERENCES especies(id_especie),
     id_usuario BIGINT NOT NULL REFERENCES usuarios(id_usuario),
     id_sendero BIGINT NOT NULL REFERENCES senderos(id_sendero),
-    descripcion TEXT,
+    id_estado BIGINT NOT NULL REFERENCES estados_observacion(id_estado_observacion),
+	descripcion TEXT,
     fecha_observacion TIMESTAMP NOT NULL,
     coordenada_longitud DECIMAL(9,6),
     coordenada_latitud DECIMAL(9,6),
-    estado BOOLEAN,
     imagen_1 TEXT,
 	imagen_2 TEXT,
     imagen_3 TEXT,
-    fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
+    id_usario_modifica BIGINT REFERENCES usuarios(id_usuario),
+	fecha_creado TIMESTAMP NOT NULL DEFAULT NOW(),
     fecha_modificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
-
