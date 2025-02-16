@@ -77,6 +77,7 @@ export async function IniciarSesion(req: Request, res: Response) {
       id_user: usuario.id_usuario,
       name : usuario.nombres,
       lastName: usuario.apellidos,
+      nombre_rol: usuario.nombre_rol,
       email:  usuario.correo,
       phone: usuario.telefono,
       photo: usuario.imagen, 
