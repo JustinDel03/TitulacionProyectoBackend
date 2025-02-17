@@ -6,7 +6,10 @@ import { Server } from "socket.io"; // Importamos Socket.io
 import { initDbConnections } from "./db";
 import usuarioRoutes from "./routes/usuario";
 import alertaRoutes from "./routes/alerta";
+import especieRoutes from "./routes/especie";
+import senderoRoutes from "./routes/sendero"
 import config from "./config/config";
+import home from './routes/home.route';
 import observacionRoutes from './routes/observacion';
 const { maxRetries, retryDelay } = config.retryConfig;
 
@@ -15,11 +18,10 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:4200",
+    origin: "https://observagye.onrender.com",
     methods: ["GET", "POST"],
   },
 });
-
 
 async function startServer() {
   let connected = false;
@@ -70,6 +72,9 @@ async function startServer() {
   app.use("/api/Usuario", usuarioRoutes);
   app.use("/api/Alerta", alertaRoutes);
   app.use("/api/Observacion", observacionRoutes);
+  app.use("/api/Especie", especieRoutes);
+  app.use("/api/Sendero", senderoRoutes);
+  app.use('/api', home)
 
 
 
@@ -79,5 +84,6 @@ async function startServer() {
     console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
   });
 }
+
 
 startServer();

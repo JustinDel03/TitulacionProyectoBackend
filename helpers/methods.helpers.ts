@@ -7,7 +7,7 @@ import '../globalconfig'
 export const responseService = (codigo: number, datos: any, mensaje: string = "", error: boolean,resp: Response) => {
     resp.statusCode = codigo;
     return resp.json({
-        "datos": datos ? datos : null,
+        "data": datos ? datos : null,
         "mensaje": mensaje,
         "error": error
     });
@@ -22,7 +22,7 @@ export const createJwt = (datos: DatosJwt) => {
 
 export const validateJwt = (token: string) => {
     try {
-     
+    
         const valida = jwt.verify(token, process.env.KEY_JWT!) as JwtPayload;
         return valida as DatosJwt;
     } catch (error) {
@@ -30,4 +30,5 @@ export const validateJwt = (token: string) => {
         return null;
     }
 };
+
 
